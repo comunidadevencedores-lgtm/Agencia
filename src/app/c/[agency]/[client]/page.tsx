@@ -18,9 +18,7 @@ export default function ClientPortalPage({
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   async function load() {
     const { data: result, error } = await supabase.rpc('get_client_portal', {
@@ -29,7 +27,6 @@ export default function ClientPortalPage({
     })
     if (error || !result || result.error) { setNotFound(true); setLoading(false); return }
     setData(result)
-    // pré-seleciona primeiro vídeo no form
     const firstVideo = result.projects?.[0]?.videos?.[0]
     if (firstVideo) setAltForm(p => ({ ...p, video_id: firstVideo.id }))
     setLoading(false)
@@ -49,6 +46,14 @@ export default function ClientPortalPage({
     setAltForm(p => ({ ...p, description: '' }))
     await load()
     setTimeout(() => setSent(false), 3000)
+  }
+
+  function driveDownloadUrl(url: string) {
+    if (!url) return url
+    const match = url.match(/\/file\/d\/([^/]+)/)
+    if (match) return `https://drive.google.com/uc?export=download&id=${match[1]}`
+    if (url.includes('uc?export=download')) return url
+    return url
   }
 
   function allVideos() {
@@ -72,18 +77,14 @@ export default function ClientPortalPage({
 
   const videos = allVideos()
   const openRevisions = data.revisions?.filter(r => r.status !== 'done') || []
-  const doneRevisions = data.revisions?.filter(r => r.status === 'done') || []
 
   return (
     <div className={styles.wrap}>
       <div className={styles.phone}>
-        {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.headerTop}>Deliver</div>
           <div className={styles.headerName}>{data.client.name}</div>
-          <div className={styles.headerSub}>
-            {data.projects[0]?.title || 'Sem projeto ativo'}
-          </div>
+          <div className={styles.headerSub}>{data.projects[0]?.title || 'Sem projeto ativo'}</div>
           <div className={styles.stats}>
             <div className={styles.stat}>
               <div className={styles.statVal}>{videos.length}</div>
@@ -100,7 +101,6 @@ export default function ClientPortalPage({
           </div>
         </div>
 
-        {/* TABS */}
         <div className={styles.tabBar}>
           <button className={`${styles.tab} ${tab === 'videos' ? styles.tabOn : ''}`} onClick={() => setTab('videos')}>Vídeos</button>
           <button className={`${styles.tab} ${tab === 'alteracoes' ? styles.tabOn : ''}`} onClick={() => setTab('alteracoes')}>
@@ -108,7 +108,6 @@ export default function ClientPortalPage({
           </button>
         </div>
 
-        {/* VÍDEOS */}
         {tab === 'videos' && (
           <div className={styles.section}>
             {videos.map(video => (
@@ -127,19 +126,13 @@ export default function ClientPortalPage({
                   </div>
                   <div className={styles.vBtns}>
                     {video.youtube_url && (
-                      <a href={video.youtube_url} target="_blank" rel="noopener" className={styles.btnWatch}>
-                        ▶ Assistir
-                      </a>
+                      <a href={video.youtube_url} target="_blank" rel="noopener" className={styles.btnWatch}>▶ Assistir</a>
                     )}
                     {video.drive_url && (
-                      <a href={video.drive_url} target="_blank" rel="noopener" className={styles.btnDl}>
-                        ↓ Baixar 4K
-                      </a>
+                      <a href={driveDownloadUrl(video.drive_url)} target="_blank" rel="noopener" className={styles.btnDl}>↓ Baixar 4K</a>
                     )}
                     {video.status !== 'approved' && (
-                      <button className={styles.btnAlt} onClick={() => openRevision(video.id)}>
-                        ✏ Pedir alteração
-                      </button>
+                      <button className={styles.btnAlt} onClick={() => openRevision(video.id)}>✏ Pedir alteração</button>
                     )}
                   </div>
                 </div>
@@ -148,32 +141,19 @@ export default function ClientPortalPage({
           </div>
         )}
 
-        {/* ALTERAÇÕES */}
         {tab === 'alteracoes' && (
           <div className={styles.section}>
             <div className={styles.secLabel}>Nova solicitação</div>
             <div className={styles.altForm}>
               <div className={styles.altFormTitle}>O que precisa mudar?</div>
-              <select
-                className={styles.altSel}
-                value={altForm.video_id}
-                onChange={e => setAltForm(p => ({ ...p, video_id: e.target.value }))}
-              >
-                {videos.map(v => (
-                  <option key={v.id} value={v.id}>{v.title}</option>
-                ))}
+              <select className={styles.altSel} value={altForm.video_id} onChange={e => setAltForm(p => ({ ...p, video_id: e.target.value }))}>
+                {videos.map(v => (<option key={v.id} value={v.id}>{v.title}</option>))}
               </select>
-              <textarea
-                className={styles.altTa}
-                value={altForm.description}
-                onChange={e => setAltForm(p => ({ ...p, description: e.target.value }))}
-                placeholder="Ex: Aumentar a fonte do texto no começo, tá difícil de ler no celular..."
-              />
+              <textarea className={styles.altTa} value={altForm.description} onChange={e => setAltForm(p => ({ ...p, description: e.target.value }))} placeholder="Ex: Aumentar a fonte do texto no começo..." />
               <button className={styles.altSend} onClick={sendRevision} disabled={sending}>
                 {sent ? '✓ Enviado!' : sending ? 'Enviando...' : 'Enviar solicitação'}
               </button>
             </div>
-
             {data.revisions?.length > 0 && (
               <>
                 <div className={styles.secLabel} style={{ marginTop: 20 }}>Histórico</div>
@@ -182,9 +162,7 @@ export default function ClientPortalPage({
                     <div className={`${styles.histDot} ${r.status === 'done' ? styles.histDotDone : ''}`} />
                     <div className={styles.histInfo}>
                       <div className={styles.histTitle}>{r.description}</div>
-                      <div className={styles.histDate}>
-                        {new Date(r.created_at).toLocaleDateString('pt-BR')}
-                      </div>
+                      <div className={styles.histDate}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</div>
                     </div>
                     <span className={`${styles.histBadge} ${r.status === 'done' ? styles.badgeDone : styles.badgePend}`}>
                       {r.status === 'done' ? 'Resolvido' : 'Em andamento'}
@@ -197,7 +175,6 @@ export default function ClientPortalPage({
         )}
       </div>
 
-      {/* MODAL PLAYER */}
       {playerVideo && (
         <div className={styles.modalOverlay} onClick={() => setPlayerVideo(null)}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -218,11 +195,11 @@ export default function ClientPortalPage({
                   </a>
                 )}
                 {playerVideo.drive_url && (
-                  <a href={playerVideo.drive_url} target="_blank" rel="noopener" className={styles.mBtn}>
+                  <a href={driveDownloadUrl(playerVideo.drive_url)} target="_blank" rel="noopener" className={styles.mBtn}>
                     <span className={styles.mBtnIcon}>↓</span>
                     <div>
                       <div className={styles.mBtnLabel}>Baixar em 4K</div>
-                      <div className={styles.mBtnDesc}>Arquivo original via Google Drive</div>
+                      <div className={styles.mBtnDesc}>Download direto do arquivo original</div>
                     </div>
                   </a>
                 )}
