@@ -52,7 +52,7 @@ export default function ClientPortalPage({
   }
 
   function allVideos() {
-    return data?.projects?.flatMap(p => p.videos || []) || []
+    return data?.projects.flatMap(p => p.videos || []) || []
   }
 
   function openRevision(videoId: string) {
@@ -73,7 +73,6 @@ export default function ClientPortalPage({
   const videos = allVideos()
   const openRevisions = data.revisions?.filter(r => r.status !== 'done') || []
   const doneRevisions = data.revisions?.filter(r => r.status === 'done') || []
-  const projectTitle = data.projects?.[0]?.title || 'Sem projeto ativo'
 
   return (
     <div className={styles.wrap}>
@@ -83,7 +82,7 @@ export default function ClientPortalPage({
           <div className={styles.headerTop}>Deliver</div>
           <div className={styles.headerName}>{data.client.name}</div>
           <div className={styles.headerSub}>
-            {projectTitle}
+            {data.projects[0]?.title || 'Sem projeto ativo'}
           </div>
           <div className={styles.stats}>
             <div className={styles.stat}>
@@ -178,7 +177,7 @@ export default function ClientPortalPage({
             {data.revisions?.length > 0 && (
               <>
                 <div className={styles.secLabel} style={{ marginTop: 20 }}>Histórico</div>
-                {data.revisions?.map((r: Revision) => (
+                {data.revisions.map((r: Revision) => (
                   <div key={r.id} className={styles.histItem}>
                     <div className={`${styles.histDot} ${r.status === 'done' ? styles.histDotDone : ''}`} />
                     <div className={styles.histInfo}>

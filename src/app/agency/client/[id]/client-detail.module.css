@@ -1,0 +1,43 @@
+.backBtn { background: none; border: none; color: var(--text3); font-size: 12px; cursor: pointer; padding: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 4px; }
+.backBtn:hover { color: var(--text2); }
+
+.detailHead { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--bg4); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: var(--text2); flex-shrink: 0; }
+.detailName { font-size: 18px; font-weight: 500; color: var(--text); }
+.detailSub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+.linkBox { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+.linkUrl { flex: 1; font-size: 12px; color: var(--text3); word-break: break-all; }
+.btnCopyLink { padding: 6px 14px; background: var(--bg4); border: 0.5px solid var(--border2); border-radius: 7px; color: var(--text2); font-size: 12px; cursor: pointer; white-space: nowrap; transition: .15s; flex-shrink: 0; }
+.btnCopyLink:hover { color: var(--text); }
+
+.sectionHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+.projectCard { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.projectHeader { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
+.projectTitle { font-size: 14px; font-weight: 500; color: var(--text); }
+.btnAddVideo { padding: 5px 12px; background: transparent; border: 0.5px solid var(--border2); border-radius: 7px; color: var(--text3); font-size: 12px; cursor: pointer; transition: .15s; }
+.btnAddVideo:hover { color: var(--text); border-color: var(--text3); }
+
+.videosGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px 16px; }
+.emptyVideos { grid-column: span 3; text-align: center; padding: 20px; color: var(--text3); font-size: 12px; }
+
+.videoCard { background: var(--bg3); border: 0.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+.videoCard[data-approved="true"] { border-color: #1e3a28; }
+.vThumb { aspect-ratio: 16/9; background: var(--bg4); display: flex; align-items: center; justify-content: center; }
+.vIcon { font-size: 24px; color: var(--text3); }
+.vInfo { padding: 10px 12px; }
+.vTitle { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.vMeta { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.vBtns { display: flex; flex-wrap: wrap; gap: 4px; }
+.btnWatch, .btnDl, .btnApprove { padding: 4px 9px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: .15s; border: 0.5px solid var(--border2); text-decoration: none; display: inline-flex; align-items: center; }
+.btnWatch { background: var(--bg2); color: var(--text2); }
+.btnWatch:hover { color: var(--text); }
+.btnDl { background: var(--bg2); color: var(--text2); }
+.btnDl:hover { color: var(--text); }
+.btnApprove { background: var(--green-bg); border-color: transparent; color: var(--green); }
+.btnApprove:hover { opacity: .85; }
+
+@media (max-width: 600px) {
+  .videosGrid { grid-template-columns: repeat(2, 1fr); }
+}

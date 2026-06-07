@@ -102,6 +102,9 @@ export default function AgencyPage() {
             <span>✏️</span> Alterações
             {revisions.length > 0 && <span className={styles.badge}>{revisions.length}</span>}
           </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
+            <span>⚙️</span> Configurações
+          </div>
         </nav>
         <div className={styles.sFoot}>
           <button className={styles.logoutBtn} onClick={logout}>Sair</button>
