@@ -72,10 +72,10 @@ export default function AgencyPage() {
     router.push('/')
   }
 
-  function getInitials(name: string) {
-    if (!name) return '??'
-    return name.split(' ').filter(w => w.length > 0).slice(0, 2).map(w => w[0].toUpperCase()).join('')
-  }
+ function getInitials(name: string) {
+  if (!name) return '?'
+  return name.split(' ').slice(0, 2).filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('')
+}
 
   function clientLink(client: Client) {
     return `${window.location.origin}/c/${agencySlug}/${client.slug}`
