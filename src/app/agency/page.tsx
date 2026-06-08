@@ -73,7 +73,8 @@ export default function AgencyPage() {
   }
 
   function getInitials(name: string) {
-    return name.split(' ').slice(0, 2).map(w => w[0].toUpperCase()).join('')
+    if (!name) return '??'
+    return name.split(' ').filter(w => w.length > 0).slice(0, 2).map(w => w[0].toUpperCase()).join('')
   }
 
   function clientLink(client: Client) {
