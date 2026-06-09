@@ -96,20 +96,29 @@ export default function DemandsPage() {
   const pending = demands.filter(d => d.remaining > 0).length
 
   return (
-    <nav className={styles.sNav}>
-  <div className={styles.navItem} onClick={() => router.push('/agency')}>
-    <span>👥</span> Clientes
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
-    <span>📋</span> Demandas
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
-    <span>✏️</span> Alterações
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
-    <span>⚙️</span> Configurações
-  </div>
-</nav>
+    <div className={styles.app}>
+      <aside className={styles.sidebar}>
+        <div className={styles.sLogo}>
+          <div className={styles.sLogoTop}>Deliver</div>
+          <div className={styles.sLogoName}>Painel da agência</div>
+        </div>
+        <nav className={styles.sNav}>
+          <div className={styles.navItem} onClick={() => router.push('/agency')}>
+            <span>👥</span> Clientes
+          </div>
+          <div className={styles.navItem} data-active="true">
+            <span>📋</span> Demandas
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
+            <span>✏️</span> Alterações
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
+            <span>⚙️</span> Configurações
+          </div>
+        </nav>
+        <div className={styles.sFoot}>
+          <button className={styles.logoutBtn} onClick={async () => { await supabase.auth.signOut(); router.push('/') }}>Sair</button>
+        </div>
       </aside>
 
       <main className={styles.main}>
