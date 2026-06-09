@@ -25,8 +25,26 @@ export default function SettingsPage() {
     if (!user) { router.push('/'); return }
     setUserId(user.id)
 
-    const { data: agency } = await supabase.from('agencies').select('*').eq('id', user.id).single()
-    if (agency) setForm({ name: agency.name, email: agency.email, slug: agency.slug, logo_url: agency.logo_url || '' })
+    // .maybeSingle() não gera erro caso a linha não exista (evita o 406)
+    const { data: agency, error } = await supabase
+      .from('agencies')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (error) console.error('Erro ao carregar agência:', error.message)
+
+    if (agency) {
+      setForm({ 
+        name: agency.name || '', 
+        email: agency.email || user.email || '', 
+        slug: agency.slug || '', 
+        logo_url: agency.logo_url || '' 
+      })
+    } else {
+      // Caso seja o primeiro acesso, pré-carrega o email do login
+      setForm(p => ({ ...p, email: user.email || '' }))
+    }
     setLoading(false)
   }
 
@@ -35,14 +53,25 @@ export default function SettingsPage() {
   }
 
   async function saveAgency() {
+    if (!form.name) return
     setSaving(true)
-    await supabase.from('agencies').update({
+    
+    // .upsert cria se não existir ou atualiza se já existir
+    const { error } = await supabase.from('agencies').upsert({
+      id: userId,
       name: form.name,
+      email: form.email,
       slug: toSlug(form.slug || form.name),
       logo_url: form.logo_url || null,
-    }).eq('id', userId)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    })
+
+    if (error) {
+      console.error(error)
+      alert('Erro ao salvar dados.')
+    } else {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    }
     setSaving(false)
   }
 
@@ -50,9 +79,16 @@ export default function SettingsPage() {
     setErrPwd('')
     if (pwd.new !== pwd.confirm) { setErrPwd('As senhas não coincidem'); return }
     if (pwd.new.length < 6) { setErrPwd('Mínimo 6 caracteres'); return }
+    
     setSavingPwd(true)
     const { error } = await supabase.auth.updateUser({ password: pwd.new })
-    if (error) { setErrPwd(error.message); setSavingPwd(false); return }
+    
+    if (error) { 
+      setErrPwd(error.message)
+      setSavingPwd(false)
+      return 
+    }
+    
     setSavedPwd(true)
     setPwd({ current: '', new: '', confirm: '' })
     setTimeout(() => setSavedPwd(false), 2500)
@@ -73,20 +109,20 @@ export default function SettingsPage() {
           <div className={agStyles.sLogoTop}>Deliver</div>
           <div className={agStyles.sLogoName}>Painel da agência</div>
         </div>
-        <nav className={styles.sNav}>
-  <div className={styles.navItem} onClick={() => router.push('/agency')}>
-    <span>👥</span> Clientes
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
-    <span>📋</span> Demandas
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
-    <span>✏️</span> Alterações
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
-    <span>⚙️</span> Configurações
-  </div>
-</nav>
+        <nav className={agStyles.sNav}>
+          <div className={agStyles.navItem} onClick={() => router.push('/agency')}>
+            <span>{"👥"}</span> Clientes
+          </div>
+          <div className={agStyles.navItem} onClick={() => router.push('/agency/demands')}>
+            <span>{"📋"}</span> Demandas
+          </div>
+          <div className={agStyles.navItem} onClick={() => router.push('/agency/revisions')}>
+            <span>{"✏️"}</span> Alterações
+          </div>
+          <div className={agStyles.navItem} data-active="true">
+            <span>{"⚙️"}</span> Configurações
+          </div>
+        </nav>
         <div className={agStyles.sFoot}>
           <button className={agStyles.logoutBtn} onClick={logout}>Sair</button>
         </div>
@@ -147,7 +183,7 @@ export default function SettingsPage() {
         </div>
 
         {/* PERIGO */}
-        <div className={styles.card} style={{ borderColor: 'var(--red-bg)' }}>
+        <div className={styles.card} style={{ borderColor: '#ff4d4f22' }}>
           <div className={styles.cardTitle} style={{ color: 'var(--red)' }}>Sair da conta</div>
           <div className={styles.cardBody}>
             <p style={{ fontSize: 13, color: 'var(--text3)' }}>Você será redirecionado para a tela de login.</p>
