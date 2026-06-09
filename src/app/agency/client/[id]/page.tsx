@@ -26,10 +26,11 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/'); return }
 
-    const { data: agency } = await supabase.from('agencies').select('slug').eq('id', user.id).single()
+    // .maybeSingle() evita quebras abruptas caso o registro falte temporariamente
+    const { data: agency } = await supabase.from('agencies').select('slug').eq('id', user.id).maybeSingle()
     if (agency) setAgencySlug(agency.slug)
 
-    const { data: clientData } = await supabase.from('clients').select('*').eq('id', params.id).single()
+    const { data: clientData } = await supabase.from('clients').select('*').eq('id', params.id).maybeSingle()
     if (!clientData) { router.push('/agency'); return }
     setClient(clientData)
 
@@ -51,6 +52,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   }
 
   function copyLink() {
+    if (!agencySlug || !client?.slug) return
     navigator.clipboard.writeText(clientLink())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -59,7 +61,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   async function createProject() {
     if (!projectForm.title.trim()) return
     setSaving(true)
-    const { data } = await supabase.from('projects').insert({ client_id: params.id, title: projectForm.title }).select().single()
+    const { data } = await supabase.from('projects').insert({ client_id: params.id, title: projectForm.title }).select().maybeSingle()
     if (data) setProjects(prev => [{ ...data, videos: [] }, ...prev])
     setModalProject(false)
     setProjectForm({ title: '' })
@@ -76,7 +78,8 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       drive_url: videoForm.drive_url || null,
       duration: videoForm.duration || null,
       orientation: videoForm.orientation,
-    }).select().single()
+    }).select().maybeSingle()
+    
     if (data) {
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, videos: [...p.videos, data] } : p))
     }
@@ -111,19 +114,19 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           <div className={agStyles.sLogoName}>Painel da agência</div>
         </div>
         <nav className={styles.sNav}>
-  <div className={styles.navItem} onClick={() => router.push('/agency')}>
-    <span>👥</span> Clientes
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
-    <span>📋</span> Demandas
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
-    <span>✏️</span> Alterações
-  </div>
-  <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
-    <span>⚙️</span> Configurações
-  </div>
-</nav>
+          <div className={styles.navItem} onClick={() => router.push('/agency')}>
+            <span>{"👥"}</span> Clientes
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
+            <span>{"📋"}</span> Demandas
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
+            <span>{"✏️"}</span> Alterações
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
+            <span>{"⚙️"}</span> Configurações
+          </div>
+        </nav>
         <div className={agStyles.sFoot}>
           <button className={agStyles.logoutBtn} onClick={async () => { await supabase.auth.signOut(); router.push('/') }}>Sair</button>
         </div>
