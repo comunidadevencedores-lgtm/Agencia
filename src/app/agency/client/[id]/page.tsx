@@ -101,7 +101,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   if (loading) return <div className={agStyles.loading}>Carregando...</div>
   if (!client) return null
 
-  const initials = client.name ? client.name.split(' ').slice(0, 2).filter((w: string) => w.length > 0).map((w: string) => w[0].toUpperCase()).join('') : '?'
+  const initials = client.name.split(' ').slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')
 
   return (
     <div className={agStyles.app}>
