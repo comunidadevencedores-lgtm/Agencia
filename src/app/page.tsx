@@ -15,9 +15,9 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
-    if (user?.email === 'vhbdavic@gmail.com') {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
+if (data.user?.email === 'vhbdavic@gmail.com') {
   router.push('/admin')
 } else {
   router.push('/agency')
