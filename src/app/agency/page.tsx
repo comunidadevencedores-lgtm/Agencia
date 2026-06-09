@@ -53,8 +53,35 @@ export default function AgencyPage() {
     if (!form.name.trim()) return
     setSaving(true)
     const slug = toSlug(form.name)
+
+    // 1. Garante se a agência pai existe antes de criar o cliente (Evita erro de Foreign Key)
+    const { data: checkAgency, error: agencyError } = await supabase
+      .from('agencies')
+      .select('id')
+      .eq('id', agencyId)
+      .maybeSingle()
+
+    if (agencyError) {
+      console.error('Erro ao verificar agência:', agencyError)
+    }
+
+    // Se a agência não existir no banco, cria o registro básico inicial dela automaticamente
+    if (!checkAgency) {
+      const { error: createAgencyError } = await supabase
+        .from('agencies')
+        .insert({ id: agencyId, name: 'Minha Agência', slug: agencyId.substring(0, 8) })
+      
+      if (createAgencyError) {
+        console.error('Não foi possível gerar registro base da agência:', createAgencyError)
+        alert('Erro de configuração: Acesse a aba "Configurações" e salve os dados da sua agência primeiro!')
+        setSaving(false)
+        return
+      }
+      // Define o slug temporário local para permitir a cópia de links imediatamente
+      setAgencySlug(agencyId.substring(0, 8))
+    }
     
-    // Mudança crucial: removemos o .single() daqui para não causar conflitos de concorrência (Erro 409)
+    // 2. Tenta inserir o novo cliente
     const { data, error } = await supabase.from('clients').insert({
       agency_id: agencyId,
       name: form.name,
@@ -64,12 +91,13 @@ export default function AgencyPage() {
     }).select()
 
     if (error) {
-      console.error(error)
-      // Código 23505 significa erro de duplicidade (Unique Violation) no PostgreSQL
+      console.error('Erro retornado pelo Supabase:', error)
+      
       if (error.code === '23505') {
-        alert('Este cliente já está cadastrado ou possui um nome muito similar!')
+        alert('Este cliente já está cadastrado ou possui um nome idêntico!')
       } else {
-        alert('Erro ao criar cliente. Verifique os dados inseridos.')
+        // Se der outro erro (ex: RLS bloqueando), este alerta mostrará o motivo exato
+        alert(`Erro do Banco (${error.code}): ${error.message}`)
       }
     } else if (data && data.length > 0) {
       setClients(prev => [data[0], ...prev])
