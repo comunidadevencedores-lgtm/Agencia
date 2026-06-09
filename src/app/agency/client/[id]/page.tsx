@@ -110,17 +110,20 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           <div className={agStyles.sLogoTop}>Deliver</div>
           <div className={agStyles.sLogoName}>Painel da agência</div>
         </div>
-        <nav className={agStyles.sNav}>
-          <div className={agStyles.navItem} data-active="true" onClick={() => router.push('/agency')}>
-            <span>👥</span> Clientes
-          </div>
-          <div className={agStyles.navItem} onClick={() => router.push('/agency/revisions')}>
-            <span>✏️</span> Alterações
-            {revisions.filter(r => r.status !== 'done').length > 0 && (
-              <span className={agStyles.badge}>{revisions.filter(r => r.status !== 'done').length}</span>
-            )}
-          </div>
-        </nav>
+        <nav className={styles.sNav}>
+  <div className={styles.navItem} onClick={() => router.push('/agency')}>
+    <span>👥</span> Clientes
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
+    <span>📋</span> Demandas
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
+    <span>✏️</span> Alterações
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
+    <span>⚙️</span> Configurações
+  </div>
+</nav>
         <div className={agStyles.sFoot}>
           <button className={agStyles.logoutBtn} onClick={async () => { await supabase.auth.signOut(); router.push('/') }}>Sair</button>
         </div>

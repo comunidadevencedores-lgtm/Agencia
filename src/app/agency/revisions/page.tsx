@@ -47,13 +47,19 @@ export default function RevisionsPage() {
           <div className={styles.sLogoName}>Painel da agência</div>
         </div>
         <nav className={styles.sNav}>
-          <div className={styles.navItem} onClick={() => router.push('/agency')}>
-            <span>👥</span> Clientes
-          </div>
-          <div className={styles.navItem} data-active="true">
-            <span>✏️</span> Alterações
-          </div>
-        </nav>
+  <div className={styles.navItem} onClick={() => router.push('/agency')}>
+    <span>👥</span> Clientes
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
+    <span>📋</span> Demandas
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
+    <span>✏️</span> Alterações
+  </div>
+  <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
+    <span>⚙️</span> Configurações
+  </div>
+</nav>
         <div className={styles.sFoot}>
           <button className={styles.logoutBtn} onClick={async () => { await supabase.auth.signOut(); router.push('/') }}>Sair</button>
         </div>
