@@ -17,7 +17,11 @@ export default function LoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
-    router.push('/agency')
+    if (user?.email === 'vhbdavic@gmail.com') {
+  router.push('/admin')
+} else {
+  router.push('/agency')
+}
   }
 
   return (
