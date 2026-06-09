@@ -73,8 +73,9 @@ export default function AgencyPage() {
   }
 
   function getInitials(name: string) {
-    return name.split(' ').slice(0, 2).map(w => w[0].toUpperCase()).join('')
-  }
+  if (!name) return '?'
+  return name.split(' ').slice(0, 2).filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('')
+}
 
   function clientLink(client: Client) {
     return `${window.location.origin}/c/${agencySlug}/${client.slug}`
@@ -96,8 +97,11 @@ export default function AgencyPage() {
         </div>
         <nav className={styles.sNav}>
           <div className={styles.navItem} data-active="true">
-            <span>👥</span> Clientes
-          </div>
+  <span>👥</span> Clientes
+</div>
+<div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
+  <span>📋</span> Demandas
+</div>
           <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
             <span>✏️</span> Alterações
             {revisions.length > 0 && <span className={styles.badge}>{revisions.length}</span>}
