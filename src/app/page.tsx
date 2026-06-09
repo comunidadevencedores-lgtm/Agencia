@@ -16,12 +16,15 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
-if (data.user?.email === 'vhbdavic@gmail.com') {
-  router.push('/admin')
-} else {
-  router.push('/agency')
-}
+    if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
+
+    // verifica se é admin
+    const { data: adminCheck } = await supabase.from('admin_users').select('email').eq('email', data.user?.email!).single()
+    if (adminCheck) {
+      router.push('/admin')
+    } else {
+      router.push('/agency')
+    }
   }
 
   return (
