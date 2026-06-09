@@ -25,15 +25,16 @@ export default function AgencyPage() {
     if (!user) { router.push('/'); return }
     setAgencyId(user.id)
 
+    // .maybeSingle() impede travamentos se a agência não estiver totalmente configurada
     const { data: agency } = await supabase
-      .from('agencies').select('slug').eq('id', user.id).single()
+      .from('agencies').select('slug').eq('id', user.id).maybeSingle()
     if (agency) setAgencySlug(agency.slug)
 
     const { data: clientsData } = await supabase
       .from('clients').select('*').eq('agency_id', user.id).order('created_at', { ascending: false })
     setClients(clientsData || [])
 
-    // busca alterações abertas de todos os clientes
+    // Busca alterações abertas de todos os clientes cadastrados
     const ids = (clientsData || []).map(c => c.id)
     if (ids.length > 0) {
       const { data: revData } = await supabase
@@ -52,18 +53,30 @@ export default function AgencyPage() {
     if (!form.name.trim()) return
     setSaving(true)
     const slug = toSlug(form.name)
+    
+    // Mudança crucial: removemos o .single() daqui para não causar conflitos de concorrência (Erro 409)
     const { data, error } = await supabase.from('clients').insert({
       agency_id: agencyId,
       name: form.name,
       slug,
       phone: form.phone || null,
       email: form.email || null,
-    }).select().single()
-    if (!error && data) {
-      setClients(prev => [data, ...prev])
+    }).select()
+
+    if (error) {
+      console.error(error)
+      // Código 23505 significa erro de duplicidade (Unique Violation) no PostgreSQL
+      if (error.code === '23505') {
+        alert('Este cliente já está cadastrado ou possui um nome muito similar!')
+      } else {
+        alert('Erro ao criar cliente. Verifique os dados inseridos.')
+      }
+    } else if (data && data.length > 0) {
+      setClients(prev => [data[0], ...prev])
       setModal(false)
       setForm({ name: '', phone: '', email: '' })
     }
+    
     setSaving(false)
   }
 
@@ -73,16 +86,21 @@ export default function AgencyPage() {
   }
 
   function getInitials(name: string) {
-  if (!name) return '?'
-  return name.split(' ').slice(0, 2).filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('')
-}
+    if (!name) return '?'
+    return name.split(' ').slice(0, 2).filter(w => w.length > 0).map(w => w[0].toUpperCase()).join('')
+  }
 
   function clientLink(client: Client) {
     return `${window.location.origin}/c/${agencySlug}/${client.slug}`
   }
 
   function copyLink(client: Client) {
+    if (!agencySlug || !client.slug) {
+      alert('Aguarde o carregamento dos dados da agência...')
+      return
+    }
     navigator.clipboard.writeText(clientLink(client))
+    alert('Link copiado com sucesso!')
   }
 
   if (loading) return <div className={styles.loading}>Carregando...</div>
@@ -97,17 +115,17 @@ export default function AgencyPage() {
         </div>
         <nav className={styles.sNav}>
           <div className={styles.navItem} data-active="true">
-  <span>👥</span> Clientes
-</div>
-<div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
-  <span>📋</span> Demandas
-</div>
+            <span>{"👥"}</span> Clientes
+          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/demands')}>
+            <span>{"📋"}</span> Demandas
+          </div>
           <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
-            <span>✏️</span> Alterações
+            <span>{"✏️"}</span> Alterações
             {revisions.length > 0 && <span className={styles.badge}>{revisions.length}</span>}
           </div>
           <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
-            <span>⚙️</span> Configurações
+            <span>{"⚙️"}</span> Configurações
           </div>
         </nav>
         <div className={styles.sFoot}>
