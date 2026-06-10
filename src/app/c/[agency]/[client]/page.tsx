@@ -49,7 +49,7 @@ export default function ClientPortalPage({
       approved_at: new Date().toISOString(),
       status: 'approved'
     }).eq('id', videoId)
-    setApprovedIds(prev => new Set([...prev, videoId]))
+    setApprovedIds(prev => { const s = new Set(prev); s.add(videoId); return s })
     setApproving(null)
     if (playerVideo?.id === videoId) setPlayerVideo(null)
   }
