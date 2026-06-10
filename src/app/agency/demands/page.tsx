@@ -22,19 +22,12 @@ export default function DemandsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/'); return }
     setAgencyId(user.id)
-
     const { data: cl } = await supabase.from('clients').select('id, name').eq('agency_id', user.id)
     setClients(cl || [])
-
-    const { data: dm } = await supabase.from('demands')
-      .select('*, clients(name)')
-      .eq('agency_id', user.id)
-      .order('deadline', { ascending: true })
-
-    // conta vídeos entregues por demanda via client_id
+    const { data: dm } = await supabase.from('demands').select('*, clients(name)').eq('agency_id', user.id).order('deadline', { ascending: true })
     const enriched = await Promise.all((dm || []).map(async d => {
       const { data: proj } = await supabase.from('projects').select('id').eq('client_id', d.client_id)
-      const projIds = (proj || []).map(p => p.id)
+      const projIds = (proj || []).map((p: any) => p.id)
       let delivered = 0
       if (projIds.length > 0) {
         const { count } = await supabase.from('videos').select('*', { count: 'exact', head: true }).in('project_id', projIds)
@@ -42,7 +35,6 @@ export default function DemandsPage() {
       }
       return { ...d, delivered, remaining: Math.max(0, d.total - delivered) }
     }))
-
     setDemands(enriched)
     setLoading(false)
   }
@@ -103,18 +95,10 @@ export default function DemandsPage() {
           <div className={styles.sLogoName}>Painel da agência</div>
         </div>
         <nav className={styles.sNav}>
-          <div className={styles.navItem} onClick={() => router.push('/agency')}>
-            <span>👥</span> Clientes
-          </div>
-          <div className={styles.navItem} data-active="true">
-            <span>📋</span> Demandas
-          </div>
-          <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}>
-            <span>✏️</span> Alterações
-          </div>
-          <div className={styles.navItem} onClick={() => router.push('/agency/settings')}>
-            <span>⚙️</span> Configurações
-          </div>
+          <div className={styles.navItem} onClick={() => router.push('/agency')}><span>👥</span> Clientes</div>
+          <div className={styles.navItem} data-active="true"><span>📋</span> Demandas {pending > 0 && <span className={styles.badge}>{pending}</span>}</div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/revisions')}><span>✏️</span> Alterações</div>
+          <div className={styles.navItem} onClick={() => router.push('/agency/settings')}><span>⚙️</span> Configurações</div>
         </nav>
         <div className={styles.sFoot}>
           <button className={styles.logoutBtn} onClick={async () => { await supabase.auth.signOut(); router.push('/') }}>Sair</button>
