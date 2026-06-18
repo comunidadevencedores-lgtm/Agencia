@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Logo } from '@/components/Logo'
 import styles from './admin.module.css'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,8 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className={styles.app}>
       <aside className={styles.sidebar}>
         <div className={styles.sLogo}>
-          <div className={styles.sLogoTop}>Deliver</div>
-          <div className={styles.sLogoName}>Super Admin</div>
+          <Logo size={32} wordmark subtitle="Super Admin" />
           <span className={styles.adminBadge}>ADMIN</span>
         </div>
         <nav className={styles.sNav}>

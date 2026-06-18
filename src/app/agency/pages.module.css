@@ -1,0 +1,102 @@
+/* ===== Cabeçalho de página ===== */
+.pageHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.greet { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.pageSub { font-size: 13px; color: var(--text3); margin-top: 4px; }
+.headActions { display: flex; align-items: center; gap: 10px; }
+.iconBtn {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: .12s; position: relative;
+}
+.iconBtn:hover { color: var(--text); border-color: var(--text3); }
+.notifDot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg2); }
+
+/* ===== Cards de estatística ===== */
+.statsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+.statCard { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+.statTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.statIcon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.statLabel { font-size: 12px; color: var(--text2); }
+.statVal { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.statSub { font-size: 11px; color: var(--text3); margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+.up { color: var(--green); }
+
+/* ===== Barra de seção + busca ===== */
+.sectionBar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.sectionTitle { font-size: 16px; font-weight: 600; color: var(--text); }
+.toolbar { display: flex; align-items: center; gap: 10px; }
+.search { position: relative; }
+.search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); }
+.searchInput { width: 240px; padding-left: 34px; }
+.select { width: auto; padding: 9px 12px; }
+
+/* ===== Grid de clientes ===== */
+.clientGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.clientCard {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; transition: border-color .15s, transform .15s;
+}
+.clientCard:hover { border-color: var(--border2); transform: translateY(-2px); }
+.cardBanner { height: 74px; background: var(--grad-soft); position: relative; border-bottom: 1px solid var(--border); }
+.cardBody { padding: 0 18px 18px; margin-top: -26px; }
+.cardIdentity { display: flex; align-items: flex-end; gap: 12px; }
+.cardName { font-size: 15px; font-weight: 600; color: var(--text); }
+.cardSub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.cardIdInfo { padding-bottom: 2px; }
+.tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 8px; white-space: nowrap; }
+.tagActive { background: var(--green-bg); color: var(--green); }
+.cardStats { display: flex; gap: 22px; margin: 16px 0; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.cardStat { }
+.cardStatVal { font-size: 17px; font-weight: 600; color: var(--text); }
+.cardStatVal[data-warn="true"] { color: var(--amber); }
+.cardStatVal[data-alert="true"] { color: var(--red); }
+.cardStatLabel { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.cardActions { display: flex; gap: 8px; }
+.btnGhost {
+  flex: 1; padding: 9px; border-radius: 9px; background: var(--bg3);
+  border: 1px solid var(--border2); color: var(--text2); font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 6px; transition: .12s;
+}
+.btnGhost:hover { color: var(--text); border-color: var(--text3); }
+.btnGhostBrand { color: var(--brand); border-color: transparent; background: var(--brand-bg); }
+.btnGhostBrand:hover { color: #fff; background: var(--grad); }
+.btnSquare { width: 38px; flex: none; }
+
+/* ===== Estado vazio ===== */
+.empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text3); font-size: 14px; border: 1px dashed var(--border2); border-radius: 16px; }
+
+/* ===== Tabela / lista genérica ===== */
+.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.row:last-child { border-bottom: none; }
+.rowMain { flex: 1; min-width: 0; }
+.rowName { font-size: 13px; font-weight: 600; color: var(--text); }
+.rowMeta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ===== Botões ===== */
+.btnPrimary { /* usa .btnGrad global; aqui só atalho local se necessário */ }
+.btnOutline { padding: 9px 14px; border-radius: 10px; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-size: 13px; font-weight: 500; transition: .12s; }
+.btnOutline:hover { color: var(--text); border-color: var(--text3); }
+.btnDanger { color: var(--red); border: 1px solid transparent; background: var(--red-bg); padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; }
+.btnDanger:hover { filter: brightness(1.15); }
+
+/* ===== Modal ===== */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; width: 440px; max-width: 100%; box-shadow: 0 24px 60px -20px rgba(0,0,0,.7); }
+.modalHead { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modalTitle { font-size: 15px; font-weight: 600; color: var(--text); }
+.mClose { background: none; border: none; color: var(--text3); font-size: 18px; line-height: 1; padding: 4px; }
+.mClose:hover { color: var(--text); }
+.modalBody { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.modalFoot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ===== Toast ===== */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 11px; padding: 11px 16px; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; z-index: 200; box-shadow: 0 12px 30px -10px rgba(0,0,0,.6); }
+
+@media (max-width: 880px) {
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+  .clientGrid { grid-template-columns: 1fr; }
+}

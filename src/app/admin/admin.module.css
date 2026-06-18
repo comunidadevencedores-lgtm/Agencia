@@ -1,14 +1,12 @@
 .app { display: flex; height: 100vh; background: var(--bg); }
 .loading { display: flex; align-items: center; justify-content: center; height: 100vh; color: var(--text3); font-size: 13px; }
-.sidebar { width: 200px; background: var(--bg2); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-.sLogo { padding: 18px 16px 12px; border-bottom: 0.5px solid var(--border); }
-.sLogoTop { font-size: 9px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
-.sLogoName { font-size: 14px; font-weight: 500; color: var(--text); }
-.adminBadge { font-size: 9px; padding: 2px 7px; border-radius: 8px; background: #2a1a06; color: var(--amber); margin-top: 4px; display: inline-block; letter-spacing: 0.06em; }
+.sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sLogo { padding: 18px 16px 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.adminBadge { font-size: 9px; padding: 2px 7px; border-radius: 8px; background: var(--amber-bg); color: var(--amber); display: inline-block; letter-spacing: 0.06em; }
 .sNav { padding: 8px 0; flex: 1; }
 .navItem { display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 12px; color: var(--text2); cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: .1s; }
 .navItem:hover { color: var(--text); background: var(--bg3); }
-.navOn { color: var(--text) !important; background: var(--bg3) !important; font-weight: 500; }
+.navOn { color: #fff !important; background: var(--grad) !important; font-weight: 600; box-shadow: var(--grad-glow); }
 .sFoot { padding: 12px 14px; border-top: 0.5px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
 .footInfo { font-size: 10px; color: var(--text3); }
 .footName { font-size: 12px; color: var(--text2); font-weight: 500; }
@@ -18,8 +16,8 @@
 .pageHead { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
 .pageTitle { font-size: 17px; font-weight: 500; color: var(--text); }
 .pageSub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.btnPrimary { display: flex; align-items: center; gap: 5px; padding: 7px 13px; background: var(--text); color: #000; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; }
-.btnPrimary:hover { opacity: .85; }
+.btnPrimary { display: flex; align-items: center; gap: 5px; padding: 8px 14px; background: var(--grad); color: #fff; border: none; border-radius: 9px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--grad-glow); }
+.btnPrimary:hover { filter: brightness(1.08); }
 .stats { display: grid; gap: 8px; margin-bottom: 18px; }
 .stats4 { grid-template-columns: repeat(4, 1fr); }
 .stats3 { grid-template-columns: repeat(3, 1fr); }
@@ -96,7 +94,7 @@
 .fRow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .modalFoot { padding: 12px 18px; border-top: 0.5px solid var(--border); display: flex; justify-content: flex-end; gap: 7px; }
 .btnCancel { padding: 7px 13px; background: transparent; border: 0.5px solid var(--border2); border-radius: 7px; color: var(--text2); font-size: 12px; cursor: pointer; }
-.btnSave { padding: 7px 13px; background: var(--text); border: none; border-radius: 7px; color: #000; font-size: 12px; font-weight: 500; cursor: pointer; }
-.btnSave:hover { opacity: .85; }
+.btnSave { padding: 8px 14px; background: var(--grad); border: none; border-radius: 8px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--grad-glow); }
+.btnSave:hover { filter: brightness(1.08); }
 .toast { position: fixed; bottom: 14px; right: 14px; background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 10px; padding: 9px 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); transform: translateY(60px); opacity: 0; transition: .3s; z-index: 200; }
 .toastShow { transform: translateY(0) !important; opacity: 1 !important; }
