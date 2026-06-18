@@ -20,6 +20,7 @@ export default function ClientPortalPage({
   const [approving, setApproving] = useState<string | null>(null)
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set())
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [])
 
   async function load() {

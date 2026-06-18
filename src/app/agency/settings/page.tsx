@@ -18,6 +18,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState({ name: '', email: '', slug: '', logo_url: '' })
   const [pwd, setPwd] = useState({ current: '', new: '', confirm: '' })
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [])
 
   async function load() {

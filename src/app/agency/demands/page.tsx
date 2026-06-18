@@ -16,6 +16,7 @@ export default function DemandsPage() {
   const [agencyId, setAgencyId] = useState('')
   const [toast, setToast] = useState('')
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [])
 
   async function load() {

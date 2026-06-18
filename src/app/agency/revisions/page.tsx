@@ -10,6 +10,7 @@ export default function RevisionsPage() {
   const [revisions, setRevisions] = useState<(Revision & { video_title?: string; client_name?: string })[]>([])
   const [loading, setLoading] = useState(true)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load() }, [])
 
   async function load() {

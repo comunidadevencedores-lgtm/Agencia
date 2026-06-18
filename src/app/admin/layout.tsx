@@ -16,6 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!data) { router.push('/agency'); return }
       setChecking(false)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const nav = [
