@@ -14,6 +14,7 @@ export type Client = {
   slug: string
   phone: string | null
   email: string | null
+  monthly_revenue: number | null
   created_at: string
 }
 
