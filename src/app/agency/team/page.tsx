@@ -36,29 +36,78 @@ export default function TeamPage() {
   async function addMember() {
     setErr('')
     if (!form.email.trim() || form.password.length < 6) { setErr('Email válido e senha de 6+ caracteres.'); return }
+    
     setSaving(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch('/api/team', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify(form),
-    })
-    const json = await res.json()
-    if (!res.ok) { setErr(json.error || 'Erro ao criar usuário'); setSaving(false); return }
-    setMembers(prev => [...prev, json.member])
-    setModal(false); setForm({ name: '', email: '', password: '', role: 'editor' })
-    setToast('Usuário criado!'); fade(); setSaving(false)
+    try {
+      // Obtém a sessão e valida que existe
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        setErr('Sua sessão expirou. Por favor, recarregue a página.')
+        setSaving(false)
+        return
+      }
+
+      // Faz a requisição com o token válido
+      const res = await fetch('/api/team', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${session.access_token}` 
+        },
+        body: JSON.stringify(form),
+      })
+      
+      const json = await res.json()
+      
+      if (!res.ok) { 
+        setErr(json.error || 'Erro ao criar usuário')
+        setSaving(false)
+        return 
+      }
+
+      // Sucesso! Atualiza a lista e limpa o modal
+      setMembers(prev => [...prev, json.member])
+      setModal(false)
+      setForm({ name: '', email: '', password: '', role: 'editor' })
+      setToast('Usuário criado com sucesso!')
+      fade()
+    } catch (e: any) {
+      setErr(e?.message || 'Erro inesperado ao criar usuário')
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function removeMember(m: Member) {
     if (!confirm(`Remover o acesso de ${m.name}? A conta de login será excluída.`)) return
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/team?user_id=${m.user_id}`, {
-      method: 'DELETE', headers: { Authorization: `Bearer ${session?.access_token}` },
-    })
-    if (!res.ok) { const j = await res.json(); setToast(j.error || 'Erro'); fade(); return }
-    setMembers(prev => prev.filter(x => x.user_id !== m.user_id))
-    setToast('Acesso removido'); fade()
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        setToast('Sua sessão expirou. Por favor, recarregue.')
+        fade()
+        return
+      }
+
+      const res = await fetch(`/api/team?user_id=${m.user_id}`, {
+        method: 'DELETE', 
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      
+      if (!res.ok) { 
+        const j = await res.json()
+        setToast(j.error || 'Erro ao remover') 
+        fade()
+        return 
+      }
+
+      setMembers(prev => prev.filter(x => x.user_id !== m.user_id))
+      setToast('Acesso removido com sucesso')
+      fade()
+    } catch (e: any) {
+      setToast(e?.message || 'Erro ao remover usuário')
+      fade()
+    }
   }
 
   function roleTag(role: Role) {
