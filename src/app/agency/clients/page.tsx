@@ -14,7 +14,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(false)
-  const [form, setForm] = useState({ name: '', phone: '', email: '' })
+  const [form, setForm] = useState({ name: '', phone: '', email: '', monthly_revenue: '' })
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState('')
 
@@ -30,17 +30,34 @@ export default function ClientsPage() {
     return name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
   }
 
+  function formatCurrency(value: string) {
+    return value.replace(/\D/g, '').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+  }
+
   async function createClient() {
     if (!form.name.trim()) return
     setSaving(true)
+    
+    const monthlyRevenue = form.monthly_revenue 
+      ? parseFloat(form.monthly_revenue.replace(/\./g, '').replace(',', '.'))
+      : null
+
     const { data, error } = await supabase.from('clients').insert({
-      agency_id: agencyId, name: form.name, slug: toSlug(form.name),
-      phone: form.phone || null, email: form.email || null,
+      agency_id: agencyId, 
+      name: form.name, 
+      slug: toSlug(form.name),
+      phone: form.phone || null, 
+      email: form.email || null,
+      monthly_revenue: monthlyRevenue,
     }).select().single()
+    
     if (error) {
       alert(error.code === '23505' ? 'Já existe um cliente com esse nome.' : `Erro: ${error.message}`)
     } else if (data) {
-      setClients(prev => [data, ...prev]); setModal(false); setForm({ name: '', phone: '', email: '' }); refresh()
+      setClients(prev => [data, ...prev])
+      setModal(false)
+      setForm({ name: '', phone: '', email: '', monthly_revenue: '' })
+      refresh()
     }
     setSaving(false)
   }
@@ -48,15 +65,19 @@ export default function ClientsPage() {
   async function removeClient(c: Client) {
     if (!confirm(`Remover o cliente "${c.name}"? Isso apaga projetos, vídeos e alterações dele.`)) return
     await supabase.from('clients').delete().eq('id', c.id)
-    setClients(prev => prev.filter(x => x.id !== c.id)); refresh()
-    setToast('Cliente removido'); fade()
+    setClients(prev => prev.filter(x => x.id !== c.id))
+    refresh()
+    setToast('Cliente removido')
+    fade()
   }
 
   function copyLink(c: Client) {
     if (!agencySlug) { setToast('Configure o slug em Configurações'); fade(); return }
     navigator.clipboard.writeText(`${window.location.origin}/c/${agencySlug}/${c.slug}`)
-    setToast('Link copiado!'); fade()
+    setToast('Link copiado!')
+    fade()
   }
+  
   function fade() { setTimeout(() => setToast(''), 2500) }
 
   const filtered = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
@@ -93,7 +114,14 @@ export default function ClientsPage() {
             <GradientAvatar name={c.name} size={40} />
             <div className={s.rowMain}>
               <div className={s.rowName}>{c.name}</div>
-              <div className={s.rowMeta}>{c.phone || c.email || 'Sem contato cadastrado'}</div>
+              <div className={s.rowMeta}>
+                {c.phone || c.email || 'Sem contato cadastrado'}
+                {c.monthly_revenue && (
+                  <span style={{ marginLeft: '12px', color: 'var(--green)' }}>
+                    R$ {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(c.monthly_revenue)}
+                  </span>
+                )}
+              </div>
             </div>
             <button className={s.btnOutline} onClick={() => copyLink(c)}>Copiar link</button>
             <button className="btnGrad" onClick={() => router.push(`/agency/client/${c.id}`)}>Abrir</button>
@@ -110,12 +138,43 @@ export default function ClientsPage() {
               <button className={s.mClose} onClick={() => setModal(false)}>✕</button>
             </div>
             <div className={s.modalBody}>
-              <div className={s.field}><label>Nome do cliente</label>
-                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Ex: Barbearia Imperium" /></div>
-              <div className={s.field}><label>WhatsApp</label>
-                <input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="(41) 99999-0000" /></div>
-              <div className={s.field}><label>Email (opcional)</label>
-                <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="cliente@email.com" /></div>
+              <div className={s.field}>
+                <label>Nome do cliente</label>
+                <input 
+                  value={form.name} 
+                  onChange={e => setForm(p => ({ ...p, name: e.target.value }))} 
+                  placeholder="Ex: Barbearia Imperium" 
+                />
+              </div>
+              <div className={s.field}>
+                <label>WhatsApp</label>
+                <input 
+                  value={form.phone} 
+                  onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} 
+                  placeholder="(41) 99999-0000" 
+                />
+              </div>
+              <div className={s.field}>
+                <label>Email (opcional)</label>
+                <input 
+                  type="email" 
+                  value={form.email} 
+                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))} 
+                  placeholder="cliente@email.com" 
+                />
+              </div>
+              <div className={s.field}>
+                <label>Receita mensal (opcional)</label>
+                <input 
+                  type="text"
+                  value={form.monthly_revenue} 
+                  onChange={e => setForm(p => ({ ...p, monthly_revenue: formatCurrency(e.target.value) }))}
+                  placeholder="5000"
+                />
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
+                  Exemplo: 5000 para R$ 5.000,00
+                </div>
+              </div>
             </div>
             <div className={s.modalFoot}>
               <button className={s.btnOutline} onClick={() => setModal(false)}>Cancelar</button>
