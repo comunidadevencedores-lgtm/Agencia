@@ -31,7 +31,16 @@ export default function AdminAgencies() {
     const slug = toSlug(form.slug || form.name)
     const { data: signUp, error } = await supabase.auth.signUp({ email: form.email, password: form.password })
     if (error || !signUp?.user?.id) { setSaving(false); showToast('Erro: ' + error?.message); return }
-    await supabase.from('agencies').insert({ id: signUp.user.id, name: form.name, email: form.email, slug, plan: form.plan, status: 'active' })
+    const { error: agencyError } = await supabase.from('agencies').insert({ id: signUp.user.id, name: form.name, email: form.email, slug, plan: form.plan, status: 'active' })
+    if (agencyError) { setSaving(false); showToast('Erro ao criar agência: ' + agencyError.message); return }
+
+    // Insere o dono como membro da agência
+    await supabase.from('agency_members').insert({
+      agency_id: signUp.user.id,
+      user_id: signUp.user.id,
+      role: 'owner'
+    })
+
     setModal(false)
     setForm({ name: '', email: '', password: '', slug: '', plan: 'trial' })
     showToast('Agência criada!')
