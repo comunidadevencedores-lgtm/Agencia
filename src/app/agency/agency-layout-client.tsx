@@ -44,7 +44,11 @@ export default function AgencyLayoutClient({ children, agencyId }: AgencyLayoutC
       }
     }
 
-    if (agencyId) load()
+    if (agencyId) {
+      load()
+    } else {
+      setLoading(false)
+    }
   }, [agencyId])
 
   if (loading) {
@@ -57,6 +61,37 @@ export default function AgencyLayoutClient({ children, agencyId }: AgencyLayoutC
         background: 'var(--bg0)'
       }}>
         Carregando...
+      </div>
+    )
+  }
+
+  if (!agencyId) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'var(--bg0)',
+        color: 'var(--text)',
+        gap: '16px'
+      }}>
+        <div style={{ fontSize: '24px' }}>⚠️</div>
+        <div>Agência não encontrada ou você não tem acesso.</div>
+        <button 
+          onClick={() => router.push('/')}
+          style={{
+            padding: '8px 16px',
+            background: 'var(--brand)',
+            border: 'none',
+            borderRadius: '4px',
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Voltar para o Início
+        </button>
       </div>
     )
   }

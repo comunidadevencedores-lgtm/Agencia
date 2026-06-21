@@ -22,9 +22,17 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
 
     if (member?.agency_id) {
       agencyId = member.agency_id
-    } else if (user.id) {
-      // Se não for member, talvez seja dono (user.id === agencies.id)
-      agencyId = user.id
+    } else {
+      // Se não for member, verifica se ele é o dono da agência (id da agência === id do usuário)
+      const { data: agency } = await supabase
+        .from('agencies')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+      
+      if (agency) {
+        agencyId = agency.id
+      }
     }
   }
 

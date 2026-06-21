@@ -122,106 +122,106 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
   const openRevisions = portal.revisions.filter(r => r.status === 'open')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg0)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg0)', paddingBottom: '40px' }}>
       {/* HEADER */}
       <div style={{
         background: 'var(--bg1)',
         borderBottom: '1px solid var(--bg2)',
-        padding: '24px',
+        padding: '48px 24px',
         textAlign: 'center'
       }}>
-        <div style={{ marginBottom: '16px' }}>
-          <Logo 
-            size={48}
-            customLogoUrl={agency.logo_url || undefined}
-            agencyName={agency.name}
-          />
-        </div>
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-          {portal.client.name}
-        </h1>
-        <p style={{ fontSize: 14, color: 'var(--text3)' }}>
-          {portal.client.email || 'Cliente'}
-        </p>
-      </div>
-
-      {/* STATS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 16,
-        padding: '24px',
-        maxWidth: '1000px',
-        margin: '0 auto'
-      }}>
-        <div style={{
-          background: 'var(--bg1)',
-          padding: '16px',
-          borderRadius: 8,
-          textAlign: 'center',
-          border: '1px solid var(--bg2)'
-        }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--brand)' }}>
-            {allVideos.length}
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <Logo 
+              size={64}
+              customLogoUrl={agency.logo_url || undefined}
+              agencyName={agency.name}
+            />
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
-            Vídeos
-          </div>
-        </div>
-        <div style={{
-          background: 'var(--bg1)',
-          padding: '16px',
-          borderRadius: 8,
-          textAlign: 'center',
-          border: '1px solid var(--bg2)'
-        }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--green)' }}>
-            {openRevisions.length}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
-            Revisões abertas
-          </div>
-        </div>
-        <div style={{
-          background: 'var(--bg1)',
-          padding: '16px',
-          borderRadius: 8,
-          textAlign: 'center',
-          border: '1px solid var(--bg2)'
-        }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--orange)' }}>
-            {portal.projects.length}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
-            Projetos
-          </div>
+          <h1 style={{ fontSize: 40, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>
+            {portal.client.name}
+          </h1>
+          <p style={{ fontSize: 16, color: 'var(--text3)' }}>
+            {portal.client.email || 'Portal do Cliente'}
+          </p>
         </div>
       </div>
 
-      {/* TABS */}
-      <div style={{
-        maxWidth: '1000px',
-        margin: '0 auto',
-        padding: '0 24px 24px'
-      }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+        {/* STATS */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 24,
+          padding: '40px 0'
+        }}>
+          <div style={{
+            background: 'var(--bg1)',
+            padding: '24px',
+            borderRadius: 12,
+            textAlign: 'center',
+            border: '1px solid var(--bg2)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--brand)' }}>
+              {allVideos.length}
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text3)', marginTop: 8, fontWeight: 500 }}>
+              Vídeos Entregues
+            </div>
+          </div>
+          <div style={{
+            background: 'var(--bg1)',
+            padding: '24px',
+            borderRadius: 12,
+            textAlign: 'center',
+            border: '1px solid var(--bg2)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--green)' }}>
+              {openRevisions.length}
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text3)', marginTop: 8, fontWeight: 500 }}>
+              Revisões em Aberto
+            </div>
+          </div>
+          <div style={{
+            background: 'var(--bg1)',
+            padding: '24px',
+            borderRadius: 12,
+            textAlign: 'center',
+            border: '1px solid var(--bg2)',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--orange)' }}>
+              {portal.projects.length}
+            </div>
+            <div style={{ fontSize: 14, color: 'var(--text3)', marginTop: 8, fontWeight: 500 }}>
+              Projetos Ativos
+            </div>
+          </div>
+        </div>
+
+        {/* TABS */}
         <div style={{
           display: 'flex',
-          gap: 24,
+          gap: 32,
           borderBottom: '1px solid var(--bg2)',
-          marginBottom: 24
+          marginBottom: 32
         }}>
           <button
             onClick={() => setActiveTab('videos')}
             style={{
-              padding: '12px 0',
+              padding: '16px 0',
               background: 'none',
               border: 'none',
               color: activeTab === 'videos' ? 'var(--brand)' : 'var(--text3)',
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: 600,
               cursor: 'pointer',
-              borderBottom: activeTab === 'videos' ? '2px solid var(--brand)' : 'none',
-              marginBottom: '-1px'
+              borderBottom: activeTab === 'videos' ? '3px solid var(--brand)' : 'none',
+              marginBottom: '-2px',
+              transition: 'all 0.2s'
             }}
           >
             Vídeos ({allVideos.length})
@@ -229,153 +229,190 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
           <button
             onClick={() => setActiveTab('revisions')}
             style={{
-              padding: '12px 0',
+              padding: '16px 0',
               background: 'none',
               border: 'none',
               color: activeTab === 'revisions' ? 'var(--brand)' : 'var(--text3)',
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: 600,
               cursor: 'pointer',
-              borderBottom: activeTab === 'revisions' ? '2px solid var(--brand)' : 'none',
-              marginBottom: '-1px'
+              borderBottom: activeTab === 'revisions' ? '3px solid var(--brand)' : 'none',
+              marginBottom: '-2px',
+              transition: 'all 0.2s'
             }}
           >
             Revisões ({openRevisions.length})
           </button>
         </div>
 
-        {/* VIDEOS TAB */}
-        {activeTab === 'videos' && (
-          <div>
-            {allVideos.length === 0 ? (
-              <div style={{
-                padding: '40px 20px',
-                textAlign: 'center',
-                color: 'var(--text3)'
-              }}>
-                Nenhum vídeo ainda
-              </div>
-            ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                gap: 16
-              }}>
-                {allVideos.map(video => (
-                  <div key={video.id} style={{
-                    background: 'var(--bg1)',
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    border: '1px solid var(--bg2)'
-                  }}>
-                    {video.youtube_url && (
-                      <div style={{
-                        width: '100%',
-                        paddingBottom: '56.25%',
-                        position: 'relative',
-                        background: 'var(--bg2)'
-                      }}>
-                        <iframe
-                          src={`https://www.youtube.com/embed/${video.youtube_url}`}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            border: 'none'
-                          }}
-                          allowFullScreen
-                        />
+        {/* CONTENT AREA */}
+        <div style={{ minHeight: '400px' }}>
+          {/* VIDEOS TAB */}
+          {activeTab === 'videos' && (
+            <div>
+              {allVideos.length === 0 ? (
+                <div style={{
+                  padding: '80px 20px',
+                  textAlign: 'center',
+                  color: 'var(--text3)',
+                  background: 'var(--bg1)',
+                  borderRadius: 12,
+                  border: '1px dashed var(--bg2)'
+                }}>
+                  <div style={{ fontSize: 40, marginBottom: 16 }}>🎬</div>
+                  Nenhum vídeo disponível no momento.
+                </div>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  gap: 24
+                }}>
+                  {allVideos.map(video => (
+                    <div key={video.id} style={{
+                      background: 'var(--bg1)',
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                      border: '1px solid var(--bg2)',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      cursor: 'default'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                      e.currentTarget.style.boxShadow = '0 12px 20px -10px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}>
+                      {video.youtube_url && (
+                        <div style={{
+                          width: '100%',
+                          paddingBottom: '56.25%',
+                          position: 'relative',
+                          background: '#000'
+                        }}>
+                          <iframe
+                            src={`https://www.youtube.com/embed/${video.youtube_url}`}
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              border: 'none'
+                            }}
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
+                      <div style={{ padding: 20 }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, color: 'var(--text)' }}>
+                          {video.title}
+                        </h3>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <span style={{
+                            fontSize: 12,
+                            padding: '6px 12px',
+                            borderRadius: 20,
+                            background: video.status === 'approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+                            color: video.status === 'approved' ? 'var(--green)' : 'var(--orange)',
+                            fontWeight: 600,
+                            border: `1px solid ${video.status === 'approved' ? 'var(--green)' : 'var(--orange)'}44`
+                          }}>
+                            {video.status === 'approved' ? '✓ Aprovado' : '⏳ Em Aprovação'}
+                          </span>
+                          <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+                            {new Date(video.created_at).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                    <div style={{ padding: 12 }}>
-                      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
-                        {video.title}
-                      </h3>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* REVISIONS TAB */}
+          {activeTab === 'revisions' && (
+            <div>
+              {openRevisions.length === 0 ? (
+                <div style={{
+                  padding: '80px 20px',
+                  textAlign: 'center',
+                  color: 'var(--text3)',
+                  background: 'var(--bg1)',
+                  borderRadius: 12,
+                  border: '1px dashed var(--bg2)'
+                }}>
+                  <div style={{ fontSize: 40, marginBottom: 16 }}>✨</div>
+                  Tudo limpo! Nenhuma revisão pendente.
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: 16 }}>
+                  {openRevisions.map(revision => (
+                    <div key={revision.id} style={{
+                      background: 'var(--bg1)',
+                      padding: '24px',
+                      borderRadius: 12,
+                      border: '1px solid var(--bg2)',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    }}>
                       <div style={{
                         display: 'flex',
-                        gap: 8,
-                        alignItems: 'center'
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: 16
                       }}>
+                        <div style={{
+                          fontSize: 16,
+                          fontWeight: 600,
+                          color: 'var(--text)'
+                        }}>
+                          Solicitação de Revisão
+                        </div>
                         <span style={{
                           fontSize: 11,
                           padding: '4px 8px',
                           borderRadius: 4,
-                          background: video.status === 'approved' ? 'var(--green)' : 'var(--orange)',
-                          color: 'white'
+                          background: 'var(--bg2)',
+                          color: 'var(--text3)'
                         }}>
-                          {video.status === 'approved' ? '✓ Aprovado' : '⏳ Pendente'}
+                          {new Date(revision.created_at).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
+                      <p style={{
+                        fontSize: 14,
+                        color: 'var(--text2)',
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {revision.description}
+                      </p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* REVISIONS TAB */}
-        {activeTab === 'revisions' && (
-          <div>
-            {openRevisions.length === 0 ? (
-              <div style={{
-                padding: '40px 20px',
-                textAlign: 'center',
-                color: 'var(--text3)'
-              }}>
-                Nenhuma revisão aberta
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: 12 }}>
-                {openRevisions.map(revision => (
-                  <div key={revision.id} style={{
-                    background: 'var(--bg1)',
-                    padding: 16,
-                    borderRadius: 8,
-                    border: '1px solid var(--bg2)'
-                  }}>
-                    <div style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                      color: 'var(--text)'
-                    }}>
-                      Revisão
-                    </div>
-                    <p style={{
-                      fontSize: 13,
-                      color: 'var(--text2)',
-                      lineHeight: 1.5
-                    }}>
-                      {revision.description}
-                    </p>
-                    <div style={{
-                      fontSize: 11,
-                      color: 'var(--text3)',
-                      marginTop: 12
-                    }}>
-                      Aberta em {new Date(revision.created_at).toLocaleDateString('pt-BR')}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* FOOTER */}
       <div style={{
         textAlign: 'center',
-        padding: '24px',
+        padding: '40px 24px',
         color: 'var(--text3)',
-        fontSize: 12,
+        fontSize: 13,
         borderTop: '1px solid var(--bg2)',
-        marginTop: '48px'
+        marginTop: '64px'
       }}>
-        Portal de entrega de criativos • {agency.name}
+        Portal de Entrega • {agency.name} • © {new Date().getFullYear()}
       </div>
     </div>
   )
