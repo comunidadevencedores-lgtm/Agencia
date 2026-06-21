@@ -3,6 +3,7 @@ import React from 'react'
 interface LogoProps {
   size?: number
   wordmark?: boolean
+  subtitle?: string
   customLogoUrl?: string | null
   agencyName?: string
   onClick?: () => void
@@ -10,7 +11,8 @@ interface LogoProps {
 
 export function Logo({ 
   size = 32, 
-  wordmark = false, 
+  wordmark = false,
+  subtitle,
   customLogoUrl,
   agencyName = 'Bowl Mídias',
   onClick 
@@ -98,6 +100,28 @@ export function Logo({
             }}
           >
             MÍDIAS
+          </div>
+        </div>
+      )}
+
+      {/* Subtitle */}
+      {subtitle && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: '4px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: `${size * 0.5}px`,
+              fontWeight: 600,
+              color: 'var(--text)',
+              lineHeight: 1.1,
+            }}
+          >
+            {subtitle}
           </div>
         </div>
       )}
