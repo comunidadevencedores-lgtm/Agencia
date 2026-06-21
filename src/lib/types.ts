@@ -15,6 +15,7 @@ export type Client = {
   phone: string | null
   email: string | null
   monthly_revenue: number | null
+  logo_url: string | null
   created_at: string
 }
 
