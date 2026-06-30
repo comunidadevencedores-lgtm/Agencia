@@ -18,7 +18,7 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
       .from('agency_members')
       .select('agency_id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (member?.agency_id) {
       agencyId = member.agency_id
@@ -28,7 +28,7 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
         .from('agencies')
         .select('id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       
       if (agency) {
         agencyId = agency.id

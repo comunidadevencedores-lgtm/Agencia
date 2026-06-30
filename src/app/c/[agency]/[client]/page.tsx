@@ -25,7 +25,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
           .from('agencies')
           .select('*')
           .eq('slug', params.agency)
-          .single()
+          .maybeSingle()
 
         if (!agencyData) {
           setError('Agência não encontrada')
@@ -39,7 +39,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
           .select('*')
           .eq('agency_id', agencyData.id)
           .eq('slug', params.client)
-          .single()
+          .maybeSingle()
 
         if (!clientData) {
           setError('Cliente não encontrado')

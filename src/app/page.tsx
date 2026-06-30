@@ -19,13 +19,13 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(`Erro: ${error.message}`); setLoading(false); return }
 
-    const { data: adminCheck } = await supabase.from('admin_users').select('email').eq('email', data.user?.email!).single()
+    const { data: adminCheck } = await supabase.from('admin_users').select('email').eq('email', data.user?.email!).maybeSingle()
     if (adminCheck) {
       router.push('/admin')
     } else {
       // Verifica se tem agência antes de mandar
-      const { data: member } = await supabase.from('agency_members').select('agency_id').eq('user_id', data.user?.id!).single()
-      const { data: agency } = await supabase.from('agencies').select('id').eq('id', data.user?.id!).single()
+      const { data: member } = await supabase.from('agency_members').select('agency_id').eq('user_id', data.user?.id!).maybeSingle()
+      const { data: agency } = await supabase.from('agencies').select('id').eq('id', data.user?.id!).maybeSingle()
       
       if (member || agency) {
         router.push('/agency')
