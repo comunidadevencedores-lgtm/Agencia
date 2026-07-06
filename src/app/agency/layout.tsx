@@ -33,18 +33,25 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
 
   const { data: { user } } = await supabase.auth.getUser()
   
+  console.log('[LAYOUT] User:', user?.email)
+  
   let agencyId = ''
 
   if (user?.email) {
-    const { data: agency } = await supabase
+    console.log('[LAYOUT] Searching for agency with email:', user.email)
+    const { data: agency, error } = await supabase
       .from('agencies')
       .select('id')
       .eq('email', user.email)
       .maybeSingle()
 
+    console.log('[LAYOUT] Agency result:', { agency, error })
+
     if (agency?.id) {
       agencyId = agency.id
     }
+  } else {
+    console.log('[LAYOUT] No user email found!')
   }
 
   return (
