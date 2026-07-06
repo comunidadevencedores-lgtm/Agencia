@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import AgencyLayoutClient from './agency-layout-client'
 
 interface AgencyLayoutProps {
@@ -7,32 +8,42 @@ interface AgencyLayoutProps {
 }
 
 export default async function AgencyLayout({ children }: AgencyLayoutProps) {
-  // Busca a agência do usuário logado no servidor
+  const cookieStore = await cookies()
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: any }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // cookies.set throws when called from Client Components
+          }
+        },
+      },
+    }
+  )
+
   const { data: { user } } = await supabase.auth.getUser()
   
   let agencyId = ''
 
-  if (user) {
-    // Tenta buscar agência_id do member
-    const { data: member } = await supabase
-      .from('agency_members')
-      .select('agency_id')
-      .eq('user_id', user.id)
+  if (user?.email) {
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('id')
+      .eq('email', user.email)
       .maybeSingle()
 
-    if (member?.agency_id) {
-      agencyId = member.agency_id
-    } else {
-      // Se não for member, verifica se ele é o dono da agência (id da agência === id do usuário)
-      const { data: agency } = await supabase
-        .from('agencies')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle()
-      
-      if (agency) {
-        agencyId = agency.id
-      }
+    if (agency?.id) {
+      agencyId = agency.id
     }
   }
 
