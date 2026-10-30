@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (member || agency) {
         router.push('/agency')
       } else {
-        setError('Sua conta não está vinculada a nenhuma agência.')
+        setError('Sua conta não está vinculada a nenhuma agência. Peça ao dono para te adicionar em Equipe ou fale com o administrador.')
         setLoading(false)
       }
     }

@@ -16,14 +16,21 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+        set(name: string, value: string, options?: any) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+            cookieStore.set({ name, value, ...options })
           } catch {
-            // cookies.set lança quando chamado de um Client Component — ignorar
+            // cookies.set lança quando chamado de um Server Component em render — ignorar
+          }
+        },
+        remove(name: string, options?: any) {
+          try {
+            cookieStore.set({ name, value: '', ...options })
+          } catch {
+            // idem
           }
         },
       },

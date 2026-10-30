@@ -89,6 +89,21 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 .btnGrad:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .btnGrad:active { transform: translateY(0); }
 .btnGrad:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; transform: none; }
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color .15s, border-color .15s;
+}
+.btnGhost:hover { color: var(--text); border-color: var(--text3); }
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

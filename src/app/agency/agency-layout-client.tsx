@@ -35,6 +35,7 @@ export default function AgencyLayoutClient({ children, agencyId, role }: AgencyL
   const [userEmail, setUserEmail] = useState('')
   const [counts, setCounts] = useState<Counts>(EMPTY_COUNTS)
   const [loading, setLoading] = useState(Boolean(agencyId))
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false)
 
   const loadCounts = useCallback(async () => {
     if (!agencyId) return
@@ -86,6 +87,16 @@ export default function AgencyLayoutClient({ children, agencyId, role }: AgencyL
         if (user) {
           setUserEmail(user.email || '')
           setUserName(user.user_metadata?.name || (user.email ? user.email.split('@')[0] : 'Usuário'))
+
+          // Admin do sistema pode alternar para o painel /admin
+          if (user.email) {
+            const { data: adminRow } = await supabase
+              .from('admin_users')
+              .select('email')
+              .eq('email', user.email)
+              .maybeSingle()
+            if (alive) setIsSystemAdmin(Boolean(adminRow))
+          }
         }
 
         await loadCounts()
@@ -121,10 +132,17 @@ export default function AgencyLayoutClient({ children, agencyId, role }: AgencyL
       <div className={s.loading} style={{ flexDirection: 'column', gap: 12 }}>
         <div style={{ fontSize: 22 }}>⚠️</div>
         <div>Nenhuma agência encontrada para esta conta.</div>
-        <div style={{ fontSize: 12, color: 'var(--text3)' }}>
-          Peça ao dono da agência para te adicionar em Equipe, ou fale com o suporte.
+        <div style={{ fontSize: 12, color: 'var(--text3)', maxWidth: 380, textAlign: 'center' }}>
+          {isSystemAdmin
+            ? 'Você é administrador do sistema, mas ainda não tem uma agência própria. Crie uma em Agências ou peça para vincular a sua conta.'
+            : 'Peça ao dono da agência para te adicionar em Equipe, ou crie a sua própria agência.'}
         </div>
-        <button className="btnGrad" onClick={() => router.push('/')}>Voltar para o login</button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {isSystemAdmin && (
+            <button className="btnGrad" onClick={() => router.push('/admin/agencies')}>Ir para Agências (admin)</button>
+          )}
+          <button className={isSystemAdmin ? 'btnGhost' : 'btnGrad'} onClick={() => router.push('/')}>Voltar para o login</button>
+        </div>
       </div>
     )
   }
@@ -169,6 +187,20 @@ export default function AgencyLayoutClient({ children, agencyId, role }: AgencyL
               )
             })}
           </nav>
+
+          {isSystemAdmin && (
+            <>
+              <div className={s.sectionLabel}>Sistema</div>
+              <nav className={s.nav}>
+                <button className={s.navItem} onClick={() => router.push('/admin')}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z" />
+                  </svg>
+                  Painel admin
+                </button>
+              </nav>
+            </>
+          )}
 
           <div className={s.foot}>
             <div className={s.userRow}>

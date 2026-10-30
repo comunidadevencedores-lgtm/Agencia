@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
         <div className={styles.sFoot}>
           <div className={styles.footInfo}>Logado como admin</div>
-          <button className={styles.footBtn} onClick={() => router.push('/agency')}>← Ir para agência</button>
+          <button className={styles.footBtn} onClick={() => router.push('/agency')}>Minha agência →</button>
         </div>
       </aside>
       <main className={styles.main}>{children}</main>
