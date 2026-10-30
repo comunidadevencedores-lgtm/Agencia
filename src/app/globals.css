@@ -27,6 +27,12 @@
   --grad-soft: linear-gradient(135deg, rgba(79,125,255,.16) 0%, rgba(123,91,255,.16) 100%);
   --brand-bg:  rgba(79,125,255,.12);
   --grad-glow: 0 8px 24px -8px rgba(79,125,255,.55);
+
+  /* Aliases legados — telas antigas usam estes nomes.
+     Sem eles o background/cor virava "transparent". */
+  --bg0:    var(--bg);
+  --bg1:    var(--bg2);
+  --orange: var(--amber);
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); }

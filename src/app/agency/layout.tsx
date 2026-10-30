@@ -2,14 +2,15 @@ import { ReactNode } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import AgencyLayoutClient from './agency-layout-client'
+import type { Role } from './agency-context'
 
 interface AgencyLayoutProps {
   children: ReactNode
 }
 
 export default async function AgencyLayout({ children }: AgencyLayoutProps) {
-  const cookieStore = await cookies()
-  
+  const cookieStore = cookies()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -20,11 +21,9 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
         },
         setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: any }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
           } catch {
-            // cookies.set throws when called from Client Components
+            // cookies.set lança quando chamado de um Client Component — ignorar
           }
         },
       },
@@ -32,30 +31,50 @@ export default async function AgencyLayout({ children }: AgencyLayoutProps) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  
-  console.log('[LAYOUT] User:', user?.email)
-  
-  let agencyId = ''
 
-  if (user?.email) {
-    console.log('[LAYOUT] Searching for agency with email:', user.email)
-    const { data: agency, error } = await supabase
+  let agencyId = ''
+  let role: Role | null = null
+
+  if (user) {
+    // 1) Dono — o id da agência é o id do usuário no auth
+    const { data: owned } = await supabase
       .from('agencies')
       .select('id')
-      .eq('email', user.email)
+      .eq('id', user.id)
       .maybeSingle()
 
-    console.log('[LAYOUT] Agency result:', { agency, error })
+    if (owned) {
+      agencyId = owned.id
+      role = 'owner'
+    } else {
+      // 2) Membro de equipe (editor / visualização)
+      const { data: member } = await supabase
+        .from('agency_members')
+        .select('agency_id, role')
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-    if (agency?.id) {
-      agencyId = agency.id
+      if (member?.agency_id) {
+        agencyId = member.agency_id
+        role = (member.role as Role) || 'editor'
+      } else if (user.email) {
+        // 3) Compatibilidade com agências antigas vinculadas por e-mail
+        const { data: byEmail } = await supabase
+          .from('agencies')
+          .select('id')
+          .eq('email', user.email)
+          .maybeSingle()
+
+        if (byEmail) {
+          agencyId = byEmail.id
+          role = 'owner'
+        }
+      }
     }
-  } else {
-    console.log('[LAYOUT] No user email found!')
   }
 
   return (
-    <AgencyLayoutClient agencyId={agencyId}>
+    <AgencyLayoutClient agencyId={agencyId} role={role}>
       {children}
     </AgencyLayoutClient>
   )

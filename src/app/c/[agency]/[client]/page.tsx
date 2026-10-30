@@ -1,8 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
-import type { Agency, Client, ClientPortal } from '@/lib/types'
+import { youtubeId } from '@/lib/youtube'
+import type { Agency, ClientPortal, Video } from '@/lib/types'
 
 interface ClientPortalPageProps {
   params: {
@@ -17,75 +18,152 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'videos' | 'revisions'>('videos')
   const [error, setError] = useState('')
+  const [revTarget, setRevTarget] = useState<Video | null>(null)
+  const [revText, setRevText] = useState('')
+  const [sending, setSending] = useState(false)
+  const [toast, setToast] = useState('')
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data: agencyData } = await supabase
-          .from('agencies')
-          .select('*')
-          .eq('slug', params.agency)
-          .maybeSingle()
+  const loadPortal = useCallback(async () => {
+    try {
+      const { data: agencyData } = await supabase
+        .from('agencies')
+        .select('*')
+        .eq('slug', params.agency)
+        .maybeSingle()
 
-        if (!agencyData) {
-          setError('Agência não encontrada')
-          return
-        }
-
-        setAgency(agencyData)
-
-        const { data: clientData } = await supabase
-          .from('clients')
-          .select('*')
-          .eq('agency_id', agencyData.id)
-          .eq('slug', params.client)
-          .maybeSingle()
-
-        if (!clientData) {
-          setError('Cliente não encontrado')
-          return
-        }
-
-        const { data: projectsData } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('client_id', clientData.id)
-
-        const projectsWithVideos = await Promise.all(
-          (projectsData || []).map(async (project) => {
-            const { data: videosData } = await supabase
-              .from('videos')
-              .select('*')
-              .eq('project_id', project.id)
-
-            return {
-              ...project,
-              videos: videosData || []
-            }
-          })
-        )
-
-        const { data: revisionsData } = await supabase
-          .from('revisions')
-          .select('*')
-          .eq('client_id', clientData.id)
-          .order('created_at', { ascending: false })
-
-        setPortal({
-          client: clientData,
-          projects: projectsWithVideos,
-          revisions: revisionsData || []
-        })
-      } catch (err) {
-        console.error('Erro ao carregar portal:', err)
-        setError('Erro ao carregar dados')
-      } finally {
-        setLoading(false)
+      if (!agencyData) {
+        setError('Agência não encontrada')
+        return
       }
-    }
 
-    load()
+      setAgency(agencyData)
+
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('agency_id', agencyData.id)
+        .eq('slug', params.client)
+        .maybeSingle()
+
+      if (!clientData) {
+        setError('Cliente não encontrado')
+        return
+      }
+
+      const { data: projectsData } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('client_id', clientData.id)
+
+      const projectsWithVideos = await Promise.all(
+        (projectsData || []).map(async (project) => {
+          const { data: videosData } = await supabase
+            .from('videos')
+            .select('*')
+            .eq('project_id', project.id)
+
+          return {
+            ...project,
+            videos: videosData || []
+          }
+        })
+      )
+
+      const { data: revisionsData } = await supabase
+        .from('revisions')
+        .select('*')
+        .eq('client_id', clientData.id)
+        .order('created_at', { ascending: false })
+
+      setPortal({
+        client: clientData,
+        projects: projectsWithVideos,
+        revisions: revisionsData || []
+      })
+    } catch (err) {
+      console.error('Erro ao carregar portal:', err)
+      setError('Erro ao carregar dados')
+    } finally {
+      setLoading(false)
+    }
   }, [params.agency, params.client])
+
+  useEffect(() => { loadPortal() }, [loadPortal])
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3200)
+  }
+
+  async function requestRevision() {
+    if (!revTarget || !portal) return
+    const description = revText.trim()
+    if (description.length < 5) { showToast('Escreva o que precisa ser alterado.'); return }
+
+    setSending(true)
+    try {
+      // Preferência: função no banco valida que o vídeo é mesmo deste cliente.
+      const { error: rpcError } = await supabase.rpc('create_revision', {
+        p_agency_slug: params.agency,
+        p_client_slug: params.client,
+        p_video_id: revTarget.id,
+        p_description: description,
+      })
+
+      // Fallback para bancos sem a função (usa a policy de insert público).
+      if (rpcError) {
+        const { error } = await supabase.from('revisions').insert({
+          video_id: revTarget.id,
+          client_id: portal.client.id,
+          description,
+        })
+        if (error) throw error
+      }
+
+      setRevTarget(null)
+      setRevText('')
+      await loadPortal()
+      setActiveTab('revisions')
+      showToast('Alteração enviada para a agência!')
+    } catch (err: any) {
+      console.error('Erro ao pedir alteração:', err)
+      showToast('Não foi possível enviar. Tente novamente.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function approveVideo(video: Video) {
+    try {
+      const { error: rpcError } = await supabase.rpc('approve_video', {
+        p_agency_slug: params.agency,
+        p_client_slug: params.client,
+        p_video_id: video.id,
+      })
+
+      if (rpcError) {
+        const { error } = await supabase.from('videos').update({
+          status: 'approved',
+          approved_by_client: true,
+          approved_at: new Date().toISOString(),
+        }).eq('id', video.id)
+        if (error) throw error
+      }
+
+      setPortal(prev => prev ? {
+        ...prev,
+        projects: prev.projects.map(p => ({
+          ...p,
+          videos: p.videos.map(v => v.id === video.id ? { ...v, status: 'approved' as const } : v),
+        })),
+      } : prev)
+
+      showToast('Vídeo aprovado. Obrigado!')
+    } catch (err: any) {
+      console.error('Erro ao aprovar vídeo:', err)
+      showToast('Não foi possível aprovar. Tente novamente.')
+    }
+  }
 
   if (loading) {
     return (
@@ -268,7 +346,9 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
                   gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                   gap: 24
                 }}>
-                  {allVideos.map(video => (
+                  {allVideos.map(video => {
+                    const yt = youtubeId(video.youtube_url)
+                    return (
                     <div key={video.id} style={{
                       background: 'var(--bg1)',
                       borderRadius: 12,
@@ -285,7 +365,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
                       e.currentTarget.style.transform = 'translateY(0)'
                       e.currentTarget.style.boxShadow = 'none'
                     }}>
-                      {video.youtube_url && (
+                      {yt ? (
                         <div style={{
                           width: '100%',
                           paddingBottom: '56.25%',
@@ -293,7 +373,8 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
                           background: '#000'
                         }}>
                           <iframe
-                            src={`https://www.youtube.com/embed/${video.youtube_url}`}
+                            src={`https://www.youtube.com/embed/${yt}`}
+                            title={video.title}
                             style={{
                               position: 'absolute',
                               top: 0,
@@ -302,8 +383,19 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
                               height: '100%',
                               border: 'none'
                             }}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                           />
+                        </div>
+                      ) : (
+                        <div style={{
+                          padding: '40px 20px',
+                          textAlign: 'center',
+                          background: 'var(--bg3)',
+                          color: 'var(--text3)',
+                          fontSize: 13,
+                        }}>
+                          Prévia indisponível — use o botão de download.
                         </div>
                       )}
                       <div style={{ padding: 20 }}>
@@ -313,26 +405,70 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
-                          alignItems: 'center'
+                          alignItems: 'center',
+                          marginBottom: 16
                         }}>
                           <span style={{
                             fontSize: 12,
                             padding: '6px 12px',
                             borderRadius: 20,
-                            background: video.status === 'approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(249, 115, 22, 0.1)',
-                            color: video.status === 'approved' ? 'var(--green)' : 'var(--orange)',
+                            background: video.status === 'approved' ? 'var(--green-bg)' : 'var(--amber-bg)',
+                            color: video.status === 'approved' ? 'var(--green)' : 'var(--amber)',
                             fontWeight: 600,
-                            border: `1px solid ${video.status === 'approved' ? 'var(--green)' : 'var(--orange)'}44`
                           }}>
-                            {video.status === 'approved' ? '✓ Aprovado' : '⏳ Em Aprovação'}
+                            {video.status === 'approved' ? '✓ Aprovado' : '⏳ Em aprovação'}
                           </span>
                           <span style={{ fontSize: 12, color: 'var(--text3)' }}>
                             {new Date(video.created_at).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
+
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {video.drive_url && (
+                            <a
+                              href={video.drive_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btnGrad"
+                              style={{ fontSize: 12, padding: '9px 14px', borderRadius: 9 }}
+                            >
+                              ⬇ Baixar 4K
+                            </a>
+                          )}
+                          <button
+                            onClick={() => { setRevTarget(video); setRevText('') }}
+                            style={{
+                              fontSize: 12,
+                              padding: '9px 14px',
+                              borderRadius: 9,
+                              background: 'var(--bg3)',
+                              border: '1px solid var(--border2)',
+                              color: 'var(--text)',
+                            }}
+                          >
+                            ✏️ Pedir alteração
+                          </button>
+                          {video.status !== 'approved' && (
+                            <button
+                              onClick={() => approveVideo(video)}
+                              style={{
+                                fontSize: 12,
+                                padding: '9px 14px',
+                                borderRadius: 9,
+                                background: 'var(--green-bg)',
+                                border: '1px solid var(--green)',
+                                color: 'var(--green)',
+                                fontWeight: 600,
+                              }}
+                            >
+                              ✓ Aprovar
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -402,6 +538,65 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
           )}
         </div>
       </div>
+
+      {/* MODAL PEDIR ALTERAÇÃO */}
+      {revTarget && (
+        <div
+          onClick={() => !sending && setRevTarget(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20, zIndex: 50,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--bg2)', border: '1px solid var(--border2)',
+              borderRadius: 16, padding: 24, width: '100%', maxWidth: 520,
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 4 }}>Pedir alteração</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>
+              {revTarget.title}
+            </div>
+            <textarea
+              autoFocus
+              rows={5}
+              value={revText}
+              onChange={e => setRevText(e.target.value)}
+              placeholder="Ex: trocar o texto do final e deixar o logo maior…"
+              style={{ resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
+              <button
+                onClick={() => setRevTarget(null)}
+                disabled={sending}
+                style={{
+                  padding: '10px 16px', borderRadius: 9, fontSize: 13,
+                  background: 'var(--bg3)', border: '1px solid var(--border2)', color: 'var(--text2)',
+                }}
+              >
+                Cancelar
+              </button>
+              <button className="btnGrad" onClick={requestRevision} disabled={sending || revText.trim().length < 5}>
+                {sending ? 'Enviando…' : 'Enviar pedido'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--bg3)', border: '1px solid var(--border2)', color: 'var(--text)',
+          padding: '12px 20px', borderRadius: 10, fontSize: 13, zIndex: 60,
+          boxShadow: '0 10px 30px rgba(0,0,0,.4)',
+        }}>
+          {toast}
+        </div>
+      )}
 
       {/* FOOTER */}
       <div style={{
