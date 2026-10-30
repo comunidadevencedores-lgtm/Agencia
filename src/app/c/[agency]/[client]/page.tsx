@@ -35,60 +35,28 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
 
   const loadPortal = useCallback(async () => {
     try {
-      const { data: agencyData } = await supabase
-        .from('agencies')
-        .select('id, name, slug, logo_url, created_at')
-        .eq('slug', params.agency)
-        .maybeSingle()
+      /* Uma única chamada: o anon não tem acesso direto às tabelas.
+         A função valida agência + cliente pelo slug e devolve só campos públicos. */
+      const { data, error: rpcError } = await supabase.rpc('get_client_portal', {
+        p_agency_slug: params.agency,
+        p_client_slug: params.client,
+      })
 
-      if (!agencyData) {
-        setError('Agência não encontrada')
+      if (rpcError) {
+        setError('Erro ao carregar dados')
         return
       }
 
-      setAgency(agencyData)
-
-      const { data: clientData } = await supabase
-        .from('clients')
-        .select('id, agency_id, name, slug, logo_url, created_at')
-        .eq('agency_id', agencyData.id)
-        .eq('slug', params.client)
-        .maybeSingle()
-
-      if (!clientData) {
-        setError('Cliente não encontrado')
+      if (!data || data.error === 'not_found') {
+        setError('Agência ou cliente não encontrado')
         return
       }
 
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('client_id', clientData.id)
-
-      const projectsWithVideos = await Promise.all(
-        (projectsData || []).map(async (project) => {
-          const { data: videosData } = await supabase
-            .from('videos')
-            .select('*')
-            .eq('project_id', project.id)
-
-          return {
-            ...project,
-            videos: videosData || []
-          }
-        })
-      )
-
-      const { data: revisionsData } = await supabase
-        .from('revisions')
-        .select('*')
-        .eq('client_id', clientData.id)
-        .order('created_at', { ascending: false })
-
+      setAgency(data.agency)
       setPortal({
-        client: clientData,
-        projects: projectsWithVideos,
-        revisions: revisionsData || []
+        client: data.client,
+        projects: data.projects || [],
+        revisions: data.revisions || [],
       })
     } catch (err) {
       console.error('Erro ao carregar portal:', err)

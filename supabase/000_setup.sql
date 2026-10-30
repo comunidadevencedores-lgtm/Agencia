@@ -152,7 +152,8 @@ as $$
   select exists (select 1 from agencies where id = uid);
 $$;
 
--- Portal público: dados do cliente pelo slug (usado como alternativa às tabelas)
+-- Portal público: única porta de leitura do anon.
+-- Devolve SOMENTE colunas seguras (sem e-mail, telefone ou faturamento).
 create or replace function public.get_client_portal(
   p_agency_slug text,
   p_client_slug text
@@ -177,20 +178,55 @@ begin
   end if;
 
   select json_build_object(
-    'client', row_to_json(v_client),
-    'projects', (
-      select coalesce(json_agg(json_build_object(
+    'agency', (
+      select json_build_object(
+        'id', a.id,
+        'name', a.name,
+        'slug', a.slug,
+        'logo_url', a.logo_url
+      )
+      from agencies a where a.id = v_client.agency_id
+    ),
+    'client', json_build_object(
+      'id', v_client.id,
+      'agency_id', v_client.agency_id,
+      'name', v_client.name,
+      'slug', v_client.slug,
+      'logo_url', v_client.logo_url
+    ),
+    'projects', coalesce((
+      select json_agg(json_build_object(
         'id', p.id,
         'title', p.title,
         'status', p.status,
-        'videos', (select coalesce(json_agg(row_to_json(v)), '[]'::json) from videos v where v.project_id = p.id)
-      )), '[]'::json)
+        'videos', coalesce((
+          select json_agg(json_build_object(
+            'id', v.id,
+            'title', v.title,
+            'youtube_url', v.youtube_url,
+            'drive_url', v.drive_url,
+            'duration', v.duration,
+            'orientation', v.orientation,
+            'status', v.status,
+            'approved_by_client', v.approved_by_client,
+            'approved_at', v.approved_at,
+            'created_at', v.created_at
+          ) order by v.created_at)
+          from videos v where v.project_id = p.id
+        ), '[]'::json)
+      ) order by p.created_at)
       from projects p where p.client_id = v_client.id
-    ),
-    'revisions', (
-      select coalesce(json_agg(row_to_json(r)), '[]'::json)
+    ), '[]'::json),
+    'revisions', coalesce((
+      select json_agg(json_build_object(
+        'id', r.id,
+        'video_id', r.video_id,
+        'description', r.description,
+        'status', r.status,
+        'created_at', r.created_at
+      ) order by r.created_at desc)
       from revisions r where r.client_id = v_client.id
-    )
+    ), '[]'::json)
   ) into v_result;
 
   return v_result;
@@ -395,29 +431,23 @@ create policy "members_admin" on public.agency_members for all to authenticated
   with check (public.is_admin());
 
 -- ------------------------------------------------------------
--- PORTAL PÚBLICO (anon) — leitura por linha, colunas limitadas
+-- PORTAL PÚBLICO (anon)
+-- O anon NÃO lê tabelas: todo acesso passa por get_client_portal,
+-- create_revision e approve_video (security definer, validadas por slug).
+-- Isso evita enumerar clientes/vídeos e vazar e-mail/telefone/faturamento.
 -- ------------------------------------------------------------
+
 drop policy if exists "portal_agencies_read" on public.agencies;
-create policy "portal_agencies_read" on public.agencies for select to anon using (true);
-
-drop policy if exists "portal_clients_read" on public.clients;
-create policy "portal_clients_read" on public.clients for select to anon using (true);
-
+drop policy if exists "portal_clients_read"  on public.clients;
 drop policy if exists "portal_projects_read" on public.projects;
-create policy "portal_projects_read" on public.projects for select to anon using (true);
-
-drop policy if exists "portal_videos_read" on public.videos;
-create policy "portal_videos_read" on public.videos for select to anon using (true);
-
+drop policy if exists "portal_videos_read"   on public.videos;
 drop policy if exists "portal_revisions_read" on public.revisions;
-create policy "portal_revisions_read" on public.revisions for select to anon using (true);
 
--- O link do portal é público, mas e-mail/telefone/faturamento não.
-revoke select on public.agencies from anon;
-grant  select (id, name, slug, logo_url, created_at) on public.agencies to anon;
-
-revoke select on public.clients from anon;
-grant  select (id, agency_id, name, slug, logo_url, created_at) on public.clients to anon;
+revoke all on public.agencies  from anon;
+revoke all on public.clients   from anon;
+revoke all on public.projects  from anon;
+revoke all on public.videos    from anon;
+revoke all on public.revisions from anon;
 
 -- ------------------------------------------------------------
 -- STORAGE (logos de agência e cliente)

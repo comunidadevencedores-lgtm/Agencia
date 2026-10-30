@@ -52,8 +52,9 @@ Rode na ordem. Cada item tem o resultado esperado.
 - [ ] "Pedir alteração" com menos de 5 caracteres é bloqueado
 - [ ] Pedido enviado aparece na aba "Revisões"
 - [ ] Link com slug errado mostra "Agência/Cliente não encontrado"
-- [ ] No DevTools → Network, a resposta de `/rest/v1/agencies` **não** traz `email`
-- [ ] Idem para `clients` (sem `phone`, `email`, `monthly_revenue`)
+- [ ] No DevTools → Network, o portal só chama `POST /rest/v1/rpc/get_client_portal` (nenhum acesso direto a tabela)
+- [ ] A resposta dessa RPC não contém `email`, `phone` nem `monthly_revenue`
+- [ ] Chamar `/rest/v1/clients?select=*` com a anon key retorna **401** (anon não lê tabelas)
 
 ## 6. Demandas e Alterações
 
