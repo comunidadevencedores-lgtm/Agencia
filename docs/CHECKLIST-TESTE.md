@@ -81,9 +81,14 @@ Rode na ordem. Cada item tem o resultado esperado.
 
 - [ ] Visão geral mostra totais de agências, clientes, vídeos e revisões
 - [ ] Criar agência cria o usuário de login e vincula o dono
+- [ ] **Depois de criar a agência você continua logado como admin** (não é mais redirecionado para `/agency`)
+- [ ] Criar agência com e-mail já existente mostra "Já existe um usuário com esse e-mail"
+- [ ] Criar agência com slug repetido mostra "Já existe uma agência com esse slug"
 - [ ] Bloquear/desbloquear agência
 - [ ] Receita soma os planos corretamente
-- [ ] Logs listam os eventos
+- [ ] Logs listam os eventos (inclusive "Agência criada")
+- [ ] Logado como agência comum, abrir `/admin` cai em `/agency`
+- [ ] No console do navegador, um usuário comum não recebe linhas de `admin_users`
 
 ## 10. Regressões
 

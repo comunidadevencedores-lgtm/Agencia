@@ -39,6 +39,17 @@ e cria: tabelas, colunas, índices, funções, policies de RLS, o bucket `client
 npm run dev
 ```
 
+### 5. Conferir se o banco respondeu
+
+```bash
+npm run db:check     # testa tabelas, funções do portal, storage e admin API
+npm run db:seed      # opcional: cria agência/cliente/vídeos de demonstração
+npm run db:clean     # remove o cenário de demonstração
+```
+
+O `db:seed` imprime o login (`teste.agencia@deliver.local` / `Teste@12345`) e o link do portal
+`/c/agencia-teste/cliente-teste` para você validar o fluxo do cliente sem montar tudo na mão.
+
 ## Rotas
 
 | Rota | Quem acessa |
@@ -69,3 +80,22 @@ npm run dev
 - Membros ficam em `agency_members` (`owner` | `editor` | `viewer`)
 - `agency_of(uid)` resolve a agência do dono **ou** do membro
 - `viewer` só lê; `editor` e `owner` escrevem
+- Admins do sistema ficam em `admin_users` e são reconhecidos pela função `is_admin()`
+  (compara o e-mail do JWT) — um usuário comum não consegue listar essa tabela
+
+## Super admin
+
+Para liberar o `/admin` para uma conta:
+
+1. crie o usuário em **Authentication → Users** com **Auto Confirm User** ligado
+2. rode no SQL Editor:
+
+```sql
+insert into public.admin_users (email, name)
+values ('seu@email.com', 'Seu Nome')
+on conflict (email) do nothing;
+```
+
+A criação de agências no painel passa pela rota `POST /api/admin/agencies`, que usa a
+`service_role` no servidor. Assim a sessão do admin **não** é trocada pela conta nova
+(era o comportamento antigo, que usava `signUp` no navegador).

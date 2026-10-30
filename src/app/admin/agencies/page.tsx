@@ -29,17 +29,25 @@ export default function AdminAgencies() {
     if (!form.name || !form.email || !form.password) return
     setSaving(true)
     const slug = toSlug(form.slug || form.name)
-    const { data: signUp, error } = await supabase.auth.signUp({ email: form.email, password: form.password })
-    if (error || !signUp?.user?.id) { setSaving(false); showToast('Erro: ' + error?.message); return }
-    const { error: agencyError } = await supabase.from('agencies').insert({ id: signUp.user.id, name: form.name, email: form.email, slug, plan: form.plan, status: 'active' })
-    if (agencyError) { setSaving(false); showToast('Erro ao criar agência: ' + agencyError.message); return }
 
-    // Insere o dono como membro da agência
-    await supabase.from('agency_members').insert({
-      agency_id: signUp.user.id,
-      user_id: signUp.user.id,
-      role: 'owner'
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setSaving(false); showToast('Erro: sessão expirada'); return }
+
+    const res = await fetch('/api/admin/agencies', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ ...form, slug }),
     })
+    const json = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      setSaving(false)
+      showToast('Erro: ' + (json.error || 'não foi possível criar a agência'))
+      return
+    }
 
     setModal(false)
     setForm({ name: '', email: '', password: '', slug: '', plan: 'trial' })

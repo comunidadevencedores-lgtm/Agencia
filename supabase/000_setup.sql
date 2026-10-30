@@ -343,14 +343,56 @@ create policy "members_owner_write" on public.agency_members for all
   using (agency_id = auth.uid())
   with check (agency_id = auth.uid());
 
--- admin: lista de admins e logs legíveis por usuário autenticado
-drop policy if exists "admin_users_read" on public.admin_users;
-create policy "admin_users_read" on public.admin_users for select
-  to authenticated using (true);
+-- ------------------------------------------------------------
+-- ADMIN DO SISTEMA
+-- ------------------------------------------------------------
 
+-- Quem é admin? (comparação pelo e-mail do JWT — evita recursão de RLS)
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from admin_users
+    where lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+
+grant execute on function public.is_admin() to authenticated;
+
+-- admin_users: admin vê/gerencia todos; usuário comum vê só a própria linha
+drop policy if exists "admin_users_read" on public.admin_users;
+create policy "admin_users_read" on public.admin_users for select to authenticated
+  using (public.is_admin() or lower(email) = lower(coalesce(auth.jwt() ->> 'email', '')));
+
+drop policy if exists "admin_users_write" on public.admin_users;
+create policy "admin_users_write" on public.admin_users for all to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- admin_logs: só admin lê e escreve
 drop policy if exists "admin_logs_read" on public.admin_logs;
-create policy "admin_logs_read" on public.admin_logs for select
-  to authenticated using (true);
+create policy "admin_logs_read" on public.admin_logs for select to authenticated
+  using (public.is_admin());
+
+drop policy if exists "admin_logs_write" on public.admin_logs;
+create policy "admin_logs_write" on public.admin_logs for insert to authenticated
+  with check (public.is_admin());
+
+-- agências: admin gerencia qualquer agência (além do dono em agency_own)
+drop policy if exists "agencies_admin" on public.agencies;
+create policy "agencies_admin" on public.agencies for all to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- equipe: admin gerencia a equipe de qualquer agência
+drop policy if exists "members_admin" on public.agency_members;
+create policy "members_admin" on public.agency_members for all to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
 
 -- ------------------------------------------------------------
 -- PORTAL PÚBLICO (anon) — leitura por linha, colunas limitadas
