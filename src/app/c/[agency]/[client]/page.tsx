@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Logo } from '@/components/Logo'
 import { youtubeId } from '@/lib/youtube'
-import type { Agency, ClientPortal, Video } from '@/lib/types'
+import type { Project, Revision, Video } from '@/lib/types'
 
 interface ClientPortalPageProps {
   params: {
@@ -12,9 +12,19 @@ interface ClientPortalPageProps {
   }
 }
 
+/* O portal público não tem acesso a e-mail, telefone nem faturamento
+   (ver grants por coluna em supabase/000_setup.sql). */
+type PortalAgency = { id: string; name: string; slug: string; logo_url: string | null }
+type PortalClient = { id: string; agency_id: string; name: string; slug: string; logo_url: string | null }
+type PortalData = {
+  client: PortalClient
+  projects: (Project & { videos: Video[] })[]
+  revisions: Revision[]
+}
+
 export default function ClientPortalPage({ params }: ClientPortalPageProps) {
-  const [portal, setPortal] = useState<ClientPortal | null>(null)
-  const [agency, setAgency] = useState<Agency | null>(null)
+  const [portal, setPortal] = useState<PortalData | null>(null)
+  const [agency, setAgency] = useState<PortalAgency | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'videos' | 'revisions'>('videos')
   const [error, setError] = useState('')
@@ -27,7 +37,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
     try {
       const { data: agencyData } = await supabase
         .from('agencies')
-        .select('*')
+        .select('id, name, slug, logo_url, created_at')
         .eq('slug', params.agency)
         .maybeSingle()
 
@@ -40,7 +50,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
 
       const { data: clientData } = await supabase
         .from('clients')
-        .select('*')
+        .select('id, agency_id, name, slug, logo_url, created_at')
         .eq('agency_id', agencyData.id)
         .eq('slug', params.client)
         .maybeSingle()
@@ -220,7 +230,7 @@ export default function ClientPortalPage({ params }: ClientPortalPageProps) {
             {portal.client.name}
           </h1>
           <p style={{ fontSize: 16, color: 'var(--text3)' }}>
-            {portal.client.email || 'Portal do Cliente'}
+            Portal do Cliente · vídeos, aprovações e alterações
           </p>
         </div>
       </div>

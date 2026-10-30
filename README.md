@@ -25,14 +25,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_anon_key
 SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key   # só servidor (/api/team)
 ```
 
-### 3. Rodar os SQLs no Supabase (nesta ordem)
+### 3. Criar o banco no Supabase
 
-1. `supabase/schema.sql` — tabelas base + RLS
-2. `supabase/team.sql` — equipe (dono/editor/visualização) e policies por agência
-3. `supabase/demands.sql` — demandas, colunas de aprovação e admins
-4. `supabase/portal.sql` — leitura pública do portal, bucket de logos e ações do cliente
+Cole `supabase/000_setup.sql` no **SQL Editor** e rode. Ele é idempotente (pode rodar várias vezes)
+e cria: tabelas, colunas, índices, funções, policies de RLS, o bucket `client-logos` e os admins iniciais.
 
-> `clean_schema.sql`, `full_schema.sql` e `full_schema_v2.sql` na raiz são versões antigas/duplicadas e não devem ser usadas.
+> Os arquivos `schema.sql`, `team.sql`, `demands.sql` e `portal.sql` são as partes separadas.
+> Use-os apenas se quiser aplicar por etapas — o `000_setup.sql` já contém tudo.
 
 ### 4. Rodar local
 
